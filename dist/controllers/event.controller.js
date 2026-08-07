@@ -40,7 +40,7 @@ export const getEventById = (req, res) => {
 };
 export const createEvent = (req, res) => {
     try {
-        const { title, description, date, location, organizer, hasAttendance, requireFileUpload, customFields } = req.body;
+        const { title, description, date, location, organizer, hasAttendance, requireFileUpload, highlights, customFields } = req.body;
         if (!title || !description || !date) {
             return res.status(400).json({
                 success: false,
@@ -56,6 +56,7 @@ export const createEvent = (req, res) => {
             organizer: organizer || 'HITian Inside',
             hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
             requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
+            highlights: highlights || [],
             customFields: customFields || [],
             createdAt: new Date().toISOString()
         };

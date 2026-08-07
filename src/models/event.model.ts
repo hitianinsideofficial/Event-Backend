@@ -10,9 +10,34 @@ export let events: EventItem[] = [
     organizer: 'HITian Tech Club',
     hasAttendance: true,
     requireFileUpload: true,
+    highlights: [
+      { icon: '🏆', title: 'Prize Pool', description: '₹50,000 Cash Prizes & Schwag Kits' },
+      { icon: '💻', title: 'Tracks', description: 'AI/ML, Web3, & Fullstack Innovation' },
+      { icon: '👥', title: 'Mentorship', description: '1-on-1 guidance from industry leaders' }
+    ],
     customFields: [
-      { id: 'field_dept', label: 'Department / Year', type: 'text', required: true },
-      { id: 'field_phone', label: 'WhatsApp / Phone Number', type: 'tel', required: true }
+      { id: 'field_dept', label: 'Department / Year', type: 'text', required: true, description: 'e.g. CSE 3rd Year' },
+      { 
+        id: 'field_track', 
+        label: 'Select Competition Track', 
+        type: 'select', 
+        required: true, 
+        options: ['AI/ML Challenge', 'Web3 & Blockchain', 'Open Innovation'] 
+      },
+      {
+        id: 'field_diet',
+        label: 'Dietary Preference',
+        type: 'radio',
+        required: false,
+        options: ['Vegetarian', 'Non-Vegetarian', 'Vegan']
+      },
+      {
+        id: 'field_github',
+        label: 'GitHub Profile Link',
+        type: 'url',
+        required: false,
+        description: 'Provide a link to your code repositories'
+      }
     ],
     createdAt: new Date().toISOString()
   },
@@ -25,8 +50,19 @@ export let events: EventItem[] = [
     organizer: 'Creative Wing',
     hasAttendance: true,
     requireFileUpload: true,
+    highlights: [
+      { icon: '🎨', title: 'Design Sprint', description: '24-hour rapid prototyping challenge' },
+      { icon: '🚀', title: 'Tools Allowed', description: 'Figma, Adobe XD, Rive, Framer' }
+    ],
     customFields: [
-      { id: 'field_portfolio', label: 'Portfolio Link (Behance/Figma)', type: 'text', required: false }
+      { id: 'field_portfolio', label: 'Portfolio Link (Behance/Figma)', type: 'url', required: false },
+      { 
+        id: 'field_experience', 
+        label: 'Design Experience Level', 
+        type: 'select', 
+        required: true,
+        options: ['Beginner', 'Intermediate', 'Advanced / Professional'] 
+      }
     ],
     createdAt: new Date().toISOString()
   }
