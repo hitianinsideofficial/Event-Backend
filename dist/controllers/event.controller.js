@@ -56,7 +56,7 @@ export const getEventById = async (req, res) => {
 };
 export const createEvent = async (req, res) => {
     try {
-        const { title, description, date, location, organizer, status, hasAttendance, requireFileUpload, highlights, customFields } = req.body;
+        const { title, description, date, location, organizer, status, mode, hasAttendance, requireFileUpload, highlights, customFields } = req.body;
         if (!title || !description || !date) {
             return res.status(400).json({
                 success: false,
@@ -68,10 +68,11 @@ export const createEvent = async (req, res) => {
                 title,
                 description,
                 date,
-                location: location || 'Main Campus',
+                location: location || (mode === 'ONLINE' ? 'Online Event' : 'Main Campus'),
                 organizer: organizer || 'HITian Inside',
                 status: status || 'UPCOMING',
-                hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
+                mode: mode || 'OFFLINE',
+                hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
                 requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
                 highlights: highlights || [],
                 customFields: customFields || []
@@ -88,10 +89,11 @@ export const createEvent = async (req, res) => {
                 title,
                 description,
                 date,
-                location: location || 'Main Campus',
+                location: location || (mode === 'ONLINE' ? 'Online Event' : 'Main Campus'),
                 organizer: organizer || 'HITian Inside',
                 status: status || 'UPCOMING',
-                hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
+                mode: mode || 'OFFLINE',
+                hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
                 requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
                 highlights: highlights || [],
                 customFields: customFields || [],

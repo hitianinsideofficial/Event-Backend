@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { EventItem, EventHighlight, CustomField, EventStatus } from '../types/backend.types.js';
+import { EventItem, EventHighlight, CustomField } from '../types/backend.types.js';
 
 export interface EventDocument extends Document, Omit<EventItem, 'id'> {}
 
@@ -25,6 +25,7 @@ const EventSchema = new Schema<EventDocument>({
   location: { type: String, required: true },
   organizer: { type: String, default: 'HITian Inside' },
   status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
+  mode: { type: String, enum: ['OFFLINE', 'ONLINE'], default: 'OFFLINE' },
   hasAttendance: { type: Boolean, default: true },
   requireFileUpload: { type: Boolean, default: false },
   highlights: [EventHighlightSchema],

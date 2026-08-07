@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { EventModel, sampleEvents } from '../models/event.model.js';
-import { EventItem, EventStatus } from '../types/backend.types.js';
+import { EventItem, EventStatus, EventMode } from '../types/backend.types.js';
 
 export const getEvents = async (req: Request, res: Response) => {
   try {
@@ -74,6 +74,7 @@ export const createEvent = async (req: Request, res: Response) => {
       location, 
       organizer, 
       status,
+      mode,
       hasAttendance, 
       requireFileUpload, 
       highlights,
@@ -92,10 +93,11 @@ export const createEvent = async (req: Request, res: Response) => {
         title,
         description,
         date,
-        location: location || 'Main Campus',
+        location: location || (mode === 'ONLINE' ? 'Online Event' : 'Main Campus'),
         organizer: organizer || 'HITian Inside',
         status: status || 'UPCOMING',
-        hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
+        mode: mode || 'OFFLINE',
+        hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
         customFields: customFields || []
@@ -112,10 +114,11 @@ export const createEvent = async (req: Request, res: Response) => {
         title,
         description,
         date,
-        location: location || 'Main Campus',
+        location: location || (mode === 'ONLINE' ? 'Online Event' : 'Main Campus'),
         organizer: organizer || 'HITian Inside',
         status: status || 'UPCOMING',
-        hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
+        mode: mode || 'OFFLINE',
+        hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
         customFields: customFields || [],

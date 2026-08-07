@@ -1,4 +1,5 @@
 export type EventStatus = 'UPCOMING' | 'LIVE' | 'DONE';
+export type EventMode = 'OFFLINE' | 'ONLINE';
 
 export interface EventHighlight {
   icon?: string;
@@ -25,6 +26,7 @@ export interface EventItem {
   location: string;
   organizer: string;
   status: EventStatus;
+  mode: EventMode;
   hasAttendance: boolean;
   requireFileUpload: boolean;
   highlights?: EventHighlight[];
