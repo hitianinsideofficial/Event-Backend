@@ -34,25 +34,5 @@ SubmissionSchema.set('toJSON', {
     }
 });
 export const SubmissionModel = mongoose.model('Submission', SubmissionSchema);
-export let sampleSubmissions = [
-    {
-        id: 'sub-101',
-        eventId: '1',
-        eventTitle: 'HITian Tech Symposium 2026',
-        ticketId: 'HIT-EVT-98214A',
-        fullName: 'Alex Johnson',
-        email: 'alex.johnson@hit.edu',
-        phone: '+91 98765 43210',
-        answers: { field_dept: 'Computer Science, 3rd Year' },
-        files: [
-            {
-                originalName: 'project_abstract.pdf',
-                mimeType: 'application/pdf',
-                localUrl: '/uploads/sample.pdf'
-            }
-        ],
-        qrCodeUrl: '',
-        attendanceStatus: 'PENDING',
-        createdAt: new Date().toISOString()
-    }
-];
+// Empty sample array (no dummy submissions)
+export let sampleSubmissions = [];

@@ -43,23 +43,5 @@ EventSchema.set('toJSON', {
 
 export const EventModel = mongoose.model<EventDocument>('Event', EventSchema);
 
-export let sampleEvents: EventItem[] = [
-  {
-    id: '1',
-    title: 'HITian Tech Symposium 2026',
-    description: 'Annual technical symposium featuring workshops, hackathons, and guest lectures. Upload your project proposal or presentation slides upon registration.',
-    date: '2026-09-15',
-    location: 'Main Auditorium',
-    organizer: 'HITian Tech Club',
-    hasAttendance: true,
-    requireFileUpload: true,
-    highlights: [
-      { icon: '🏆', title: 'Prize Pool', description: '₹50,000 Cash Prizes & Schwag Kits' },
-      { icon: '💻', title: 'Tracks', description: 'AI/ML, Web3, & Fullstack Innovation' }
-    ],
-    customFields: [
-      { id: 'field_dept', label: 'Department / Year', type: 'text', required: true, description: 'e.g. CSE 3rd Year' }
-    ],
-    createdAt: new Date().toISOString()
-  }
-];
+// Empty sample array (no dummy events)
+export let sampleEvents: EventItem[] = [];

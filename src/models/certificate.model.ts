@@ -26,15 +26,5 @@ CertificateSchema.set('toJSON', {
 
 export const CertificateModel = mongoose.model<CertificateDocument>('Certificate', CertificateSchema);
 
-export let sampleCertificates: CertificateItem[] = [
-  {
-    certificateId: 'CERT-HIT-2026-X891',
-    participantName: 'Alex Johnson',
-    email: 'alex.johnson@hit.edu',
-    eventTitle: 'HITian Tech Symposium 2026',
-    issueDate: '2026-09-16',
-    certificateType: 'Certificate of Excellence',
-    issuer: 'HITian Inside Official',
-    status: 'VALID'
-  }
-];
+// Empty sample array (no dummy certificates)
+export let sampleCertificates: CertificateItem[] = [];
