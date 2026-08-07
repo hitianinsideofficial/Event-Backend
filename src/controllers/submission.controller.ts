@@ -1,41 +1,16 @@
+import { Request, Response } from 'express';
 import QRCode from 'qrcode';
-import { uploadFileToDriveOrLocal } from '../services/googleDrive.service.js';
-import { events } from './event.controller.js';
-
-// In-memory submissions store
-export let submissions = [
-  {
-    id: 'sub-101',
-    eventId: '1',
-    eventTitle: 'HITian Tech Symposium 2026',
-    ticketId: 'HIT-EVT-98214A',
-    fullName: 'Alex Johnson',
-    email: 'alex.johnson@hit.edu',
-    phone: '+91 98765 43210',
-    answers: {
-      field_dept: 'Computer Science, 3rd Year',
-      field_phone: '+91 98765 43210'
-    },
-    files: [
-      {
-        originalName: 'project_abstract.pdf',
-        mimeType: 'application/pdf',
-        driveLink: 'https://drive.google.com/sample',
-        localUrl: '/uploads/sample.pdf'
-      }
-    ],
-    qrCodeUrl: '',
-    attendanceStatus: 'PENDING',
-    createdAt: new Date().toISOString()
-  }
-];
+import { uploadFileToDriveOrLocal } from '../services/googledrive.service.js';
+import { events } from '../models/event.model.js';
+import { submissions } from '../models/submission.model.js';
+import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
 
 // Pre-generate QR code for sample submission
 QRCode.toDataURL(JSON.stringify({ ticketId: 'HIT-EVT-98214A', eventId: '1' }))
   .then(url => { if (submissions[0]) submissions[0].qrCodeUrl = url; })
   .catch(() => {});
 
-export const submitRegistration = async (req, res) => {
+export const submitRegistration = async (req: Request, res: Response) => {
   try {
     const { eventId, fullName, email, phone, answers } = req.body;
 
@@ -49,33 +24,29 @@ export const submitRegistration = async (req, res) => {
     const targetEvent = events.find(e => e.id === eventId);
     const eventTitle = targetEvent ? targetEvent.title : 'Event Registration';
 
-    // Generate unique Ticket ID
     const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
     const ticketId = `HIT-EVT-${randomHex}`;
 
-    // Process file upload if attached
-    const files = [];
+    const files: UploadedFile[] = [];
     if (req.file) {
       const fileData = await uploadFileToDriveOrLocal(req.file, req);
       if (fileData) files.push(fileData);
     }
 
-    // Parse custom answers if sent as JSON string
-    let parsedAnswers = {};
+    let parsedAnswers: Record<string, any> = {};
     if (typeof answers === 'string') {
       try { parsedAnswers = JSON.parse(answers); } catch (e) {}
-    } else if (typeof answers === 'object') {
+    } else if (typeof answers === 'object' && answers !== null) {
       parsedAnswers = answers;
     }
 
-    // Generate QR Code Data URL
     const qrPayload = JSON.stringify({ ticketId, eventId, name: fullName, email });
     const qrCodeUrl = await QRCode.toDataURL(qrPayload, {
       color: { dark: '#1e1b4b', light: '#ffffff' },
       width: 300
     });
 
-    const newSubmission = {
+    const newSubmission: SubmissionItem = {
       id: Date.now().toString(),
       eventId,
       eventTitle,
@@ -98,7 +69,7 @@ export const submitRegistration = async (req, res) => {
       message: 'Registration successful! Ticket issued.',
       data: newSubmission
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Submission Error:', error);
     return res.status(500).json({
       success: false,
@@ -108,9 +79,9 @@ export const submitRegistration = async (req, res) => {
   }
 };
 
-export const getEventSubmissions = (req, res) => {
+export const getEventSubmissions = (req: Request, res: Response) => {
   try {
-    const { eventId } = req.params;
+    const eventId = req.params.eventId as string;
     
     let result = submissions;
     if (eventId && eventId !== 'all') {
@@ -122,7 +93,7 @@ export const getEventSubmissions = (req, res) => {
       count: result.length,
       data: result
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch submissions',
@@ -131,9 +102,9 @@ export const getEventSubmissions = (req, res) => {
   }
 };
 
-export const getSubmissionByTicket = (req, res) => {
+export const getSubmissionByTicket = (req: Request, res: Response) => {
   try {
-    const { ticketId } = req.params;
+    const ticketId = req.params.ticketId as string;
     const submission = submissions.find(s => s.ticketId.toUpperCase() === ticketId.toUpperCase());
 
     if (!submission) {
@@ -147,7 +118,7 @@ export const getSubmissionByTicket = (req, res) => {
       success: true,
       data: submission
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
       success: false,
       message: 'Error looking up ticket',
@@ -156,7 +127,7 @@ export const getSubmissionByTicket = (req, res) => {
   }
 };
 
-export const checkInAttendee = (req, res) => {
+export const checkInAttendee = (req: Request, res: Response) => {
   try {
     const { ticketId } = req.body;
 
@@ -167,7 +138,7 @@ export const checkInAttendee = (req, res) => {
       });
     }
 
-    const submission = submissions.find(s => s.ticketId.toUpperCase() === ticketId.trim().toUpperCase());
+    const submission = submissions.find(s => s.ticketId.toUpperCase() === (ticketId as string).trim().toUpperCase());
 
     if (!submission) {
       return res.status(404).json({
@@ -180,7 +151,7 @@ export const checkInAttendee = (req, res) => {
       return res.status(200).json({
         success: true,
         alreadyCheckedIn: true,
-        message: `Attendee ${submission.fullName} was ALREADY checked in at ${new Date(submission.checkedInAt).toLocaleTimeString()}`,
+        message: `Attendee ${submission.fullName} was ALREADY checked in at ${new Date(submission.checkedInAt || '').toLocaleTimeString()}`,
         data: submission
       });
     }
@@ -194,7 +165,7 @@ export const checkInAttendee = (req, res) => {
       message: `SUCCESS! Check-in confirmed for ${submission.fullName}`,
       data: submission
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
       success: false,
       message: 'Check-in failed',

@@ -1,30 +1,10 @@
-// In-memory Certificates Data Store
-export let certificates = [
-  {
-    certificateId: 'CERT-HIT-2026-X891',
-    participantName: 'Alex Johnson',
-    email: 'alex.johnson@hit.edu',
-    eventTitle: 'HITian Tech Symposium 2026',
-    issueDate: '2026-09-16',
-    certificateType: 'Certificate of Excellence',
-    issuer: 'HITian Inside Official',
-    status: 'VALID'
-  },
-  {
-    certificateId: 'CERT-HIT-2026-Y402',
-    participantName: 'Sarah Smith',
-    email: 'sarah.smith@hit.edu',
-    eventTitle: 'Design-a-Thon UI/UX Contest',
-    issueDate: '2026-10-03',
-    certificateType: 'Certificate of Participation',
-    issuer: 'HITian Inside Creative Wing',
-    status: 'VALID'
-  }
-];
+import { Request, Response } from 'express';
+import { certificates } from '../models/certificate.model.js';
+import { CertificateItem } from '../types/backend.types.js';
 
-export const verifyCertificate = (req, res) => {
+export const verifyCertificate = (req: Request, res: Response) => {
   try {
-    const { certId } = req.params;
+    const certId = req.params.certId as string;
 
     if (!certId) {
       return res.status(400).json({
@@ -48,7 +28,7 @@ export const verifyCertificate = (req, res) => {
       message: 'Certificate Verified Authentic ✓',
       data: cert
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
       success: false,
       message: 'Error verifying certificate',
@@ -57,7 +37,7 @@ export const verifyCertificate = (req, res) => {
   }
 };
 
-export const issueCertificate = (req, res) => {
+export const issueCertificate = (req: Request, res: Response) => {
   try {
     const { participantName, email, eventTitle, certificateType } = req.body;
 
@@ -71,7 +51,7 @@ export const issueCertificate = (req, res) => {
     const certHex = Math.random().toString(36).substring(2, 6).toUpperCase();
     const certificateId = `CERT-HIT-2026-${certHex}`;
 
-    const newCert = {
+    const newCert: CertificateItem = {
       certificateId,
       participantName,
       email: email || '',
@@ -89,7 +69,7 @@ export const issueCertificate = (req, res) => {
       message: 'Certificate issued successfully',
       data: newCert
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({
       success: false,
       message: 'Failed to issue certificate',

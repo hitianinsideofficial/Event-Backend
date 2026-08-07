@@ -1,8 +1,8 @@
-import multer from 'multer';
+import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { Request } from 'express';
 
-// Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -19,8 +19,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const fileFilter = (req, file, cb) => {
-  // Allow PNGs, JPGs, MP4s, WebM, PDF, Zip
+const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
   const allowedMimeTypes = [
     'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp',
     'video/mp4', 'video/webm', 'video/quicktime',
@@ -30,12 +29,12 @@ const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`File type ${file.mimetype} is not supported. Please upload PNG, JPG, MP4, PDF, or ZIP`), false);
+    cb(new Error(`File type ${file.mimetype} is not supported. Please upload PNG, JPG, MP4, PDF, or ZIP`));
   }
 };
 
 export const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max file size
+  limits: { fileSize: 50 * 1024 * 1024 }
 });

@@ -3,11 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
-import apiRoutes from './routes/api.routes.js';
+import indexRoutes from './routes/index.route.js';
 
 const app = express();
 
-// Security and utility middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
@@ -19,25 +18,22 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-// Root Route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to HITian Inside Event API',
+    message: 'Welcome to HITian Inside Event API (TypeScript Engine)',
     endpoints: {
       health: '/api/health',
       events: '/api/events',
-      submissions: '/api/submissions'
+      submissions: '/api/submissions',
+      certificates: '/api/certificates'
     }
   });
 });
 
-// API Routes
-app.use('/api', apiRoutes);
+app.use('/api', indexRoutes);
 
-// 404 Handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -45,8 +41,7 @@ app.use((req, res) => {
   });
 });
 
-// Global Error Handler
-app.use((err, req, res, next) => {
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Unhandled Error:', err.stack);
   res.status(err.status || 500).json({
     success: false,
