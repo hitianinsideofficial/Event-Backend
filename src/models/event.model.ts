@@ -1,10 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { EventItem, EventHighlight, CustomField } from '../types/backend.types.js';
+import { EventItem, EventHighlight, CustomField, EventStatus } from '../types/backend.types.js';
 
 export interface EventDocument extends Document, Omit<EventItem, 'id'> {}
 
 const EventHighlightSchema = new Schema<EventHighlight>({
-  icon: { type: String, default: '✨' },
+  icon: { type: String, default: 'Sparkles' },
   title: { type: String, required: true },
   description: { type: String, required: true }
 }, { _id: false });
@@ -24,6 +24,7 @@ const EventSchema = new Schema<EventDocument>({
   date: { type: String, required: true },
   location: { type: String, required: true },
   organizer: { type: String, default: 'HITian Inside' },
+  status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
   hasAttendance: { type: Boolean, default: true },
   requireFileUpload: { type: Boolean, default: false },
   highlights: [EventHighlightSchema],
@@ -43,5 +44,4 @@ EventSchema.set('toJSON', {
 
 export const EventModel = mongoose.model<EventDocument>('Event', EventSchema);
 
-// Empty sample array (no dummy events)
 export let sampleEvents: EventItem[] = [];

@@ -1,29 +1,28 @@
 import { Request, Response } from 'express';
 import { EventModel, sampleEvents } from '../models/event.model.js';
-import { EventItem } from '../types/backend.types.js';
+import { EventItem, EventStatus } from '../types/backend.types.js';
 
 export const getEvents = async (req: Request, res: Response) => {
   try {
-    const dbEvents = await EventModel.find().sort({ createdAt: -1 });
-    
-    if (dbEvents && dbEvents.length > 0) {
-      return res.status(200).json({
-        success: true,
-        count: dbEvents.length,
-        data: dbEvents
-      });
-    }
+    const includeDone = req.query.includeDone === 'true';
+
+    const filter: any = includeDone ? {} : { status: { $ne: 'DONE' } };
+    const dbEvents = await EventModel.find(filter).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
-      count: sampleEvents.length,
-      data: sampleEvents
+      count: dbEvents.length,
+      data: dbEvents
     });
   } catch (error: any) {
+    const filteredSamples = req.query.includeDone === 'true' 
+      ? sampleEvents 
+      : sampleEvents.filter(e => e.status !== 'DONE');
+
     return res.status(200).json({
       success: true,
-      count: sampleEvents.length,
-      data: sampleEvents
+      count: filteredSamples.length,
+      data: filteredSamples
     });
   }
 };
@@ -74,6 +73,7 @@ export const createEvent = async (req: Request, res: Response) => {
       date, 
       location, 
       organizer, 
+      status,
       hasAttendance, 
       requireFileUpload, 
       highlights,
@@ -94,6 +94,7 @@ export const createEvent = async (req: Request, res: Response) => {
         date,
         location: location || 'Main Campus',
         organizer: organizer || 'HITian Inside',
+        status: status || 'UPCOMING',
         hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
@@ -106,7 +107,6 @@ export const createEvent = async (req: Request, res: Response) => {
         data: newDoc
       });
     } catch (dbErr) {
-      // In-memory fallback
       const newEvent: EventItem = {
         id: Date.now().toString(),
         title,
@@ -114,6 +114,7 @@ export const createEvent = async (req: Request, res: Response) => {
         date,
         location: location || 'Main Campus',
         organizer: organizer || 'HITian Inside',
+        status: status || 'UPCOMING',
         hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : true,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
@@ -134,5 +135,64 @@ export const createEvent = async (req: Request, res: Response) => {
       message: 'Failed to create event',
       error: error.message
     });
+  }
+};
+
+export const updateEventStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body as { status: EventStatus };
+
+    if (!['UPCOMING', 'LIVE', 'DONE'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Allowed values: UPCOMING, LIVE, DONE'
+      });
+    }
+
+    const event = await EventModel.findByIdAndUpdate(id, { status }, { new: true });
+
+    if (!event) {
+      const sample = sampleEvents.find(e => e.id === id);
+      if (sample) {
+        sample.status = status;
+        return res.status(200).json({ success: true, message: 'Status updated', data: sample });
+      }
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Event status updated to ${status}`,
+      data: event
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateEventForm = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { customFields } = req.body;
+
+    const event = await EventModel.findByIdAndUpdate(id, { customFields }, { new: true });
+
+    if (!event) {
+      const sample = sampleEvents.find(e => e.id === id);
+      if (sample) {
+        sample.customFields = customFields;
+        return res.status(200).json({ success: true, message: 'Form updated', data: sample });
+      }
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Event registration form updated successfully',
+      data: event
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 const EventHighlightSchema = new Schema({
-    icon: { type: String, default: '✨' },
+    icon: { type: String, default: 'Sparkles' },
     title: { type: String, required: true },
     description: { type: String, required: true }
 }, { _id: false });
@@ -18,6 +18,7 @@ const EventSchema = new Schema({
     date: { type: String, required: true },
     location: { type: String, required: true },
     organizer: { type: String, default: 'HITian Inside' },
+    status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
     hasAttendance: { type: Boolean, default: true },
     requireFileUpload: { type: Boolean, default: false },
     highlights: [EventHighlightSchema],
@@ -35,5 +36,4 @@ EventSchema.set('toJSON', {
     }
 });
 export const EventModel = mongoose.model('Event', EventSchema);
-// Empty sample array (no dummy events)
 export let sampleEvents = [];
