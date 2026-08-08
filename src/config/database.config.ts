@@ -3,6 +3,10 @@ import mongoose from 'mongoose';
 export async function connectDB(): Promise<void> {
   const mongoURI = process.env.MONGODB_URI;
 
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
   if (!mongoURI) {
     console.warn('⚠️ MONGODB_URI not found in process.env. Running in offline fallback mode.');
     return;
