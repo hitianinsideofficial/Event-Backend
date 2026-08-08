@@ -144,7 +144,9 @@ export const submitRegistration = async (req: Request, res: Response) => {
       width: 300
     });
 
-    // Fire Brevo Email Confirmation asynchronously
+    // Automated registration confirmation email disabled per requirement.
+    // Registration emails are suppressed; acknowledgment emails are sent when triggered by admin.
+    /*
     sendRegistrationConfirmationEmail({
       toEmail: email,
       toName: fullName,
@@ -156,6 +158,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
       answers: parsedAnswers,
       qrCodeUrl
     }).catch(err => console.error('Background Email Dispatch Error:', err));
+    */
 
     try {
       const newDoc = await SubmissionModel.create({
@@ -174,7 +177,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
 
       return res.status(201).json({
         success: true,
-        message: 'Registration successful! Ticket saved to MongoDB Atlas & Confirmation Email sent.',
+        message: 'Registration successful! Ticket saved to MongoDB Atlas.',
         data: newDoc
       });
     } catch (dbErr) {
@@ -197,7 +200,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
 
       return res.status(201).json({
         success: true,
-        message: 'Registration successful! Ticket issued & Confirmation Email sent.',
+        message: 'Registration successful! Ticket issued.',
         data: newSubmission
       });
     }
