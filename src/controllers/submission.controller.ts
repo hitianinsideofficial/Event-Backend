@@ -6,7 +6,7 @@ import { uploadToCloudinary } from '../services/cloudinary.service.js';
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
-import { sendRegistrationConfirmationEmail } from '../services/brevo.service.js';
+import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail } from '../services/brevo.service.js';
 
 // Helper to normalize roll number strings e.g. 26/CSE/092 -> 26/CSE/92
 function normalizeRollString(rollStr: string): string {
@@ -330,3 +330,61 @@ export const checkInAttendee = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const acknowledgeSubmission = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    let sub: any = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      sub = await SubmissionModel.findById(id);
+    }
+    if (!sub) {
+      sub = sampleSubmissions.find(s => s.id === id);
+    }
+
+    if (!sub) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission record not found.'
+      });
+    }
+
+    sub.acknowledged = true;
+    sub.acknowledgedAt = new Date().toISOString();
+
+    if (typeof sub.save === 'function') {
+      await sub.save();
+    }
+
+    const domainTitle = sub.answers?.['Selected Domain'] || '';
+    const themeTitle = sub.answers?.['Selected Theme'] || '';
+    const submissionLink = sub.answers?.['Google Drive Video Reel Link'] || (sub.files && sub.files[0] ? (sub.files[0].driveLink || sub.files[0].localUrl) : '');
+
+    // Dispatch Acknowledgment Email via Brevo
+    sendSubmissionAcknowledgmentEmail({
+      toEmail: sub.email,
+      toName: sub.fullName,
+      ticketId: sub.ticketId,
+      eventTitle: sub.eventTitle,
+      domainTitle,
+      themeTitle,
+      submissionLink,
+      answers: sub.answers
+    }).catch(err => console.error('Background Acknowledgment Email Dispatch Error:', err));
+
+    return res.status(200).json({
+      success: true,
+      message: `Submission for ${sub.fullName} (${domainTitle || 'Entry'}) acknowledged! Acknowledgment email sent.`,
+      data: sub
+    });
+  } catch (err: any) {
+    console.error('Acknowledge Submission Error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to acknowledge submission',
+      error: err.message
+    });
+  }
+};
+

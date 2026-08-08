@@ -26,6 +26,8 @@ const SubmissionSchema = new Schema<SubmissionDocument>({
   qrCodeUrl: { type: String },
   attendanceStatus: { type: String, enum: ['PENDING', 'CHECKED_IN'], default: 'PENDING' },
   checkedInAt: { type: String, default: null },
+  acknowledged: { type: Boolean, default: false },
+  acknowledgedAt: { type: String, default: null },
   createdAt: { type: String, default: () => new Date().toISOString() }
 });
 
