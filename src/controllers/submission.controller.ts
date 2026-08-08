@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
 import QRCode from 'qrcode';
 import { uploadFileToDriveOrLocal } from '../services/googledrive.service.js';
+import { uploadToCloudinary } from '../services/cloudinary.service.js';
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
@@ -36,8 +38,32 @@ export const submitRegistration = async (req: Request, res: Response) => {
 
     const files: UploadedFile[] = [];
     if (req.file) {
-      const fileData = await uploadFileToDriveOrLocal(req.file, req);
-      if (fileData) files.push(fileData);
+      // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary
+      if (req.file.mimetype.startsWith('image/')) {
+        const buffer = req.file.buffer || (req.file.path ? fs.readFileSync(req.file.path) : null);
+        if (buffer) {
+          const cloudRes = await uploadToCloudinary(buffer, req.file.originalname, 'swaraj_e_hind');
+          if (cloudRes) {
+            files.push({
+              provider: 'cloudinary',
+              fileId: cloudRes.publicId,
+              driveLink: cloudRes.secureUrl,
+              downloadLink: cloudRes.secureUrl,
+              localUrl: cloudRes.secureUrl,
+              originalName: req.file.originalname,
+              mimeType: req.file.mimetype,
+              size: cloudRes.bytes
+            });
+          } else {
+            const fileData = await uploadFileToDriveOrLocal(req.file, req);
+            if (fileData) files.push(fileData);
+          }
+        }
+      } else {
+        // PDF/DOC files upload to Google Drive / Local
+        const fileData = await uploadFileToDriveOrLocal(req.file, req);
+        if (fileData) files.push(fileData);
+      }
     }
 
     let parsedAnswers: Record<string, any> = {};
