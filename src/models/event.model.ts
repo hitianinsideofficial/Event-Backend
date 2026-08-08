@@ -68,10 +68,22 @@ export const SWARAJ_E_HIND_PRESET: EventItem = {
   hasAttendance: false,
   requireFileUpload: true,
   highlights: [
-    { title: 'TRICOLENS (Reel Making)', description: 'Themes: The Price of Freedom | One Minute Through India\'s Journey | The Cost of One Flag (Mandatory Google Drive Link)' },
-    { title: 'PATRIOT\'S PALETTE (Artwork & Digital Art)', description: 'Themes: Threads of Unity | Pixels of Patriotism | Youth: The Voice and Today (JPG/PNG/PSD/AI, Max 100MB)' },
-    { title: 'APERTURE OF FREEDOM (Photography)', description: 'Themes: Roots of India | Unsung Heroes | Tiranga Palette (JPG/PNG, Max 100MB)' },
-    { title: 'INKQUILAB (Creative Writing)', description: 'Themes: The Price of Silence | Dreaming India 2047 | The Railway Platform, 1947 (PDF/DOC, 300 words max, Max 10MB)' }
+    { 
+      title: '1. What is Swaraj-e-Hind?', 
+      description: 'Swaraj-e-Hind is more than just an event, it’s a celebration of India, its freedom, and the voices of its youth. It brings together ideas, creativity, and expressions that reflect what India means to us today.' 
+    },
+    { 
+      title: '2. What happens here?', 
+      description: 'From conversations and performances to creative expressions, Swaraj-e-Hind gives everyone a chance to share their thoughts and showcase their talent. It’s a space to speak, create, question, and celebrate together.' 
+    },
+    { 
+      title: '3. Evaluation Process', 
+      description: 'Participants will be judged on creativity, originality, relevance to the theme, and how effectively they present their ideas. We’re not just looking for the “perfect” answer, we’re looking for something that stands out and has meaning.' 
+    },
+    { 
+      title: '4. Value Edition', 
+      description: 'The Value Edition is about going beyond celebration and looking at the values that make us who we are—freedom, unity, courage, responsibility, and respect. Because independence isn’t just something we remember; it’s something we carry forward.' 
+    }
   ],
   customFields: [
     {
@@ -112,7 +124,7 @@ export const SWARAJ_E_HIND_PRESET: EventItem = {
       label: 'College Roll Number',
       type: 'text',
       required: true,
-      description: 'Format: [Year_code]/[Dept_code]/[number] (e.g. 26/CSE/042)'
+      description: 'Format: 25/EE/092'
     },
     {
       id: 'q_domain',
