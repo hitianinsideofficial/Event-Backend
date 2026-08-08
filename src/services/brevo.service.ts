@@ -15,7 +15,7 @@ interface SendEmailParams {
 
 export async function sendRegistrationConfirmationEmail(params: SendEmailParams): Promise<boolean> {
   const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'events@hitianinside.in';
+  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'event@hitianinside.in';
   const senderName = process.env.BREVO_SENDER_NAME || 'HITian Inside Events';
 
   if (!apiKey) {

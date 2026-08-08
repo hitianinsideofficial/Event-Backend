@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 export async function sendRegistrationConfirmationEmail(params) {
     const apiKey = process.env.BREVO_API_KEY;
-    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'events@hitianinside.in';
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'event@hitianinside.in';
     const senderName = process.env.BREVO_SENDER_NAME || 'HITian Inside Events';
     if (!apiKey) {
         console.warn('⚠️ BREVO_API_KEY is not set in environment variables. Skipping confirmation email delivery.');
