@@ -18,12 +18,24 @@ export async function uploadToCloudinary(
   fileName: string,
   folder: string = 'swaraj_e_hind'
 ): Promise<CloudinaryUploadResult | null> {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  let cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
+  let apiKey = process.env.CLOUDINARY_API_KEY || '';
+  let apiSecret = process.env.CLOUDINARY_API_SECRET || '';
+
+  // Fallback parsing from CLOUDINARY_URL if present
+  if ((!cloudName || !apiKey || !apiSecret) && process.env.CLOUDINARY_URL) {
+    try {
+      const match = process.env.CLOUDINARY_URL.match(/cloudinary:\/\/([^:]+):([^@]+)@(.+)/);
+      if (match) {
+        apiKey = match[1];
+        apiSecret = match[2];
+        cloudName = match[3];
+      }
+    } catch (e) {}
+  }
 
   if (!cloudName || !apiKey || !apiSecret) {
-    console.warn('⚠️ CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, or CLOUDINARY_API_SECRET missing in environment variables.');
+    console.warn('⚠️ Cloudinary credentials missing in environment variables.');
     return null;
   }
 
