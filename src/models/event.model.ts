@@ -114,6 +114,7 @@ The Value Edition is about going beyond celebration and looking at the values th
         'Chemical Engineering',
         'Electrical Engineering',
         'Electronics and Communication Engineering',
+        'Information Technology',
         'Civil Engineering',
         'Food Technology',
         'Mechanical Engineering'
