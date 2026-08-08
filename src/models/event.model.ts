@@ -55,7 +55,19 @@ export const EventModel = mongoose.model<EventDocument>('Event', EventSchema);
 export const SWARAJ_E_HIND_PRESET: EventItem = {
   id: 'swaraj_e_hind_preset',
   title: 'SWARAJ-E-HIND 4.0',
-  description: 'The official Independence Day online submission event of HITian Inside! Showcasing freedom and national pride across 4 domains: Reel Making (TRICOLENS), Artwork & Digital Art (PATRIOT\'S PALETTE), Photography (APERTURE OF FREEDOM), and Creative Writing (INKQUILAB). Deadline: 15 August, 11:59 pm.',
+  description: `The official Independence Day online submission event of HITian Inside! Showcasing freedom and national pride across 4 domains: Reel Making (TRICOLENS), Artwork & Digital Art (PATRIOT'S PALETTE), Photography (APERTURE OF FREEDOM), and Creative Writing (INKQUILAB). Deadline: 15 August, 11:59 pm.
+
+1. What is Swaraj-e-Hind?
+Swaraj-e-Hind is more than just an event, it’s a celebration of India, its freedom, and the voices of its youth. It brings together ideas, creativity, and expressions that reflect what India means to us today.
+
+2. What happens here?
+From conversations and performances to creative expressions, Swaraj-e-Hind gives everyone a chance to share their thoughts and showcase their talent. It’s a space to speak, create, question, and celebrate together.
+
+3. Evaluation Process
+Participants will be judged on creativity, originality, relevance to the theme, and how effectively they present their ideas. We’re not just looking for the “perfect” answer, we’re looking for something that stands out and has meaning.
+
+4. Value Edition
+The Value Edition is about going beyond celebration and looking at the values that make us who we are—freedom, unity, courage, responsibility, and respect. Because independence isn’t just something we remember; it’s something we carry forward.`,
   date: 'Aug 15, 2026 (Deadline 11:59 PM)',
   startDate: '2026-08-01',
   endDate: '2026-08-15',
