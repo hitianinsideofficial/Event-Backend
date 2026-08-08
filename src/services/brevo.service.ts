@@ -183,7 +183,10 @@ export async function sendSubmissionAcknowledgmentEmail(params: SendAckEmailPara
       <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #120306; color: #fdfbf7; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: #1c060b; border: 2px solid #ff9933; border-radius: 20px; padding: 32px; box-shadow: 0 12px 40px rgba(255, 153, 51, 0.15); overflow: hidden; }
-        .tricolour-bar { height: 6px; background: linear-gradient(90deg, #ff9933 33%, #ffffff 33%, #ffffff 66%, #138808 66%); border-radius: 4px; margin-bottom: 24px; }
+        .tricolour-bar { height: 8px; font-size: 0; line-height: 0; border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+        .tc-saffron { display: inline-block; width: 33.33%; height: 8px; background-color: #FF9933 !important; }
+        .tc-white { display: inline-block; width: 33.34%; height: 8px; background-color: #FFFFFF !important; }
+        .tc-green { display: inline-block; width: 33.33%; height: 8px; background-color: #138808 !important; }
         .header { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 24px; }
         .brand-title { color: #ffffff; font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 0.5px; }
         .sub-title { color: #ff9933; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 6px; }
@@ -195,7 +198,15 @@ export async function sendSubmissionAcknowledgmentEmail(params: SendAckEmailPara
     </head>
     <body>
       <div class="container">
-        <div class="tricolour-bar"></div>
+        <div class="tricolour-bar">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0" style="table-layout: fixed; width: 100%;">
+            <tr>
+              <td width="33.33%" bgcolor="#FF9933" style="background-color: #FF9933 !important; height: 8px; font-size: 1px; line-height: 1px;">&nbsp;</td>
+              <td width="33.34%" bgcolor="#FFFFFF" style="background-color: #FFFFFF !important; height: 8px; font-size: 1px; line-height: 1px;">&nbsp;</td>
+              <td width="33.33%" bgcolor="#138808" style="background-color: #138808 !important; height: 8px; font-size: 1px; line-height: 1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </div>
         <div class="header">
           <h1 class="brand-title">🇮🇳 HITian Inside</h1>
           <div class="sub-title">Flagship Independence Event: ${eventTitle}</div>
