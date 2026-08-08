@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { Readable } from 'stream';
 import { Request } from 'express';
 import { UploadedFile } from '../types/backend.types.js';
 
@@ -27,14 +28,20 @@ export async function uploadFileToDriveOrLocal(file: Express.Multer.File, req: R
         parents: [folderId],
       };
 
-      const media = {
-        mimeType: file.mimetype,
-        body: fs.createReadStream(file.path),
-      };
+      const mediaBody = file.buffer
+        ? Readable.from(file.buffer)
+        : (file.path && fs.existsSync(file.path) ? fs.createReadStream(file.path) : undefined);
+
+      if (!mediaBody) {
+        throw new Error('No valid file buffer or stream available.');
+      }
 
       const response = await drive.files.create({
         requestBody: fileMetaData,
-        media: media,
+        media: {
+          mimeType: file.mimetype,
+          body: mediaBody,
+        },
         fields: 'id, webViewLink, webContentLink',
       });
 
