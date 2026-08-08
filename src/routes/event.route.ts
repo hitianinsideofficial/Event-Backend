@@ -3,6 +3,7 @@ import {
   getEvents, 
   getEventById, 
   createEvent, 
+  updateEventDetails,
   updateEventStatus, 
   updateEventForm,
   deleteEvent
@@ -13,6 +14,7 @@ const router = Router();
 router.get('/', getEvents);
 router.get('/:id', getEventById);
 router.post('/', createEvent);
+router.put('/:id', updateEventDetails);
 router.patch('/:id/status', updateEventStatus);
 router.put('/:id/form', updateEventForm);
 router.delete('/:id', deleteEvent);

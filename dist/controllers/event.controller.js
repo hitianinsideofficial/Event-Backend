@@ -119,6 +119,32 @@ export const createEvent = async (req, res) => {
         });
     }
 };
+export const updateEventDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        let updated = null;
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            updated = await EventModel.findByIdAndUpdate(id, updateData, { new: true });
+        }
+        if (!updated) {
+            const sample = sampleEvents.find(e => e.id === id);
+            if (sample) {
+                Object.assign(sample, updateData);
+                return res.status(200).json({ success: true, message: 'Event updated', data: sample });
+            }
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+        return res.status(200).json({
+            success: true,
+            message: 'Event details and images updated successfully!',
+            data: updated
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
 export const updateEventStatus = async (req, res) => {
     try {
         const { id } = req.params;
