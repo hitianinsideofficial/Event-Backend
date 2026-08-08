@@ -2,21 +2,27 @@ import QRCode from 'qrcode';
 import { uploadFileToDriveOrLocal } from '../services/googledrive.service.js';
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
+import { sendRegistrationConfirmationEmail } from '../services/brevo.service.js';
 export const submitRegistration = async (req, res) => {
     try {
         const { eventId, fullName, email, phone, answers } = req.body;
-        if (!eventId || !fullName || !email) {
+        if (!eventId || !fullName || !email || !phone) {
             return res.status(400).json({
                 success: false,
-                message: 'eventId, fullName, and email are required.'
+                message: 'eventId, fullName, email, and Mobile Phone Number are required.'
             });
         }
         let eventTitle = 'Event Registration';
+        let eventDate = 'TBD';
+        let location = 'Main Campus';
         try {
             if (eventId.match(/^[0-9a-fA-F]{24}$/)) {
                 const ev = await EventModel.findById(eventId);
-                if (ev)
+                if (ev) {
                     eventTitle = ev.title;
+                    eventDate = ev.date;
+                    location = ev.location;
+                }
             }
         }
         catch (e) { }
@@ -43,6 +49,18 @@ export const submitRegistration = async (req, res) => {
             color: { dark: '#1e1b4b', light: '#ffffff' },
             width: 300
         });
+        // Fire Brevo Email Confirmation asynchronously
+        sendRegistrationConfirmationEmail({
+            toEmail: email,
+            toName: fullName,
+            ticketId,
+            eventTitle,
+            eventDate,
+            location,
+            phone,
+            answers: parsedAnswers,
+            qrCodeUrl
+        }).catch(err => console.error('Background Email Dispatch Error:', err));
         try {
             const newDoc = await SubmissionModel.create({
                 eventId,
@@ -59,7 +77,7 @@ export const submitRegistration = async (req, res) => {
             });
             return res.status(201).json({
                 success: true,
-                message: 'Registration successful! Ticket saved to MongoDB Atlas.',
+                message: 'Registration successful! Ticket saved to MongoDB Atlas & Confirmation Email sent.',
                 data: newDoc
             });
         }
@@ -82,7 +100,7 @@ export const submitRegistration = async (req, res) => {
             sampleSubmissions.unshift(newSubmission);
             return res.status(201).json({
                 success: true,
-                message: 'Registration successful! Ticket issued.',
+                message: 'Registration successful! Ticket issued & Confirmation Email sent.',
                 data: newSubmission
             });
         }
@@ -183,7 +201,6 @@ export const checkInAttendee = async (req, res) => {
                 data: submission
             });
         }
-        // In-memory fallback
         const sample = sampleSubmissions.find(s => s.ticketId.toUpperCase() === targetTicket);
         if (sample) {
             if (sample.attendanceStatus === 'CHECKED_IN') {
