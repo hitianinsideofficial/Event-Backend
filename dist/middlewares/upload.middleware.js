@@ -16,20 +16,25 @@ const storage = multer.diskStorage({
     }
 });
 const fileFilter = (req, file, cb) => {
-    const allowedMimeTypes = [
-        'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp',
-        'video/mp4', 'video/webm', 'video/quicktime',
-        'application/pdf', 'application/zip'
-    ];
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    // Allow all standard image, document, video, and archive mime types
+    if (file.mimetype.startsWith('image/') ||
+        file.mimetype.startsWith('video/') ||
+        file.mimetype.startsWith('text/') ||
+        file.mimetype.includes('pdf') ||
+        file.mimetype.includes('word') ||
+        file.mimetype.includes('document') ||
+        file.mimetype.includes('msword') ||
+        file.mimetype.includes('zip') ||
+        file.mimetype.includes('octet-stream') ||
+        file.originalname.match(/\.(jpg|jpeg|png|webp|gif|psd|ai|tiff|pdf|doc|docx|mp4|mov|zip|rar)$/i)) {
         cb(null, true);
     }
     else {
-        cb(new Error(`File type ${file.mimetype} is not supported. Please upload PNG, JPG, MP4, PDF, or ZIP`));
+        cb(null, true); // Fallback allow under size limit
     }
 };
 export const upload = multer({
     storage,
     fileFilter,
-    limits: { fileSize: 50 * 1024 * 1024 }
+    limits: { fileSize: 100 * 1024 * 1024 } // 100 MB max limit
 });

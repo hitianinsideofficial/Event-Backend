@@ -79,7 +79,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
     let eventDate = 'TBD';
     let location = 'Main Campus';
     try {
-      if (eventId.match(/^[0-9a-fA-F]{24}$/)) {
+      if (typeof eventId === 'string' && eventId.match(/^[0-9a-fA-F]{24}$/)) {
         const ev = await EventModel.findById(eventId);
         if (ev) {
           eventTitle = ev.title;
@@ -94,31 +94,45 @@ export const submitRegistration = async (req: Request, res: Response) => {
 
     const files: UploadedFile[] = [];
     if (req.file) {
-      // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary
-      if (req.file.mimetype.startsWith('image/')) {
-        const buffer = req.file.buffer || (req.file.path ? fs.readFileSync(req.file.path) : null);
-        if (buffer) {
-          const cloudRes = await uploadToCloudinary(buffer, req.file.originalname, 'swaraj_e_hind');
-          if (cloudRes) {
-            files.push({
-              provider: 'cloudinary',
-              fileId: cloudRes.publicId,
-              driveLink: cloudRes.secureUrl,
-              downloadLink: cloudRes.secureUrl,
-              localUrl: cloudRes.secureUrl,
-              originalName: req.file.originalname,
-              mimeType: req.file.mimetype,
-              size: cloudRes.bytes
-            });
-          } else {
-            const fileData = await uploadFileToDriveOrLocal(req.file, req);
-            if (fileData) files.push(fileData);
+      try {
+        // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary
+        if (req.file.mimetype.startsWith('image/')) {
+          const buffer = req.file.buffer || (req.file.path && fs.existsSync(req.file.path) ? fs.readFileSync(req.file.path) : null);
+          if (buffer) {
+            const cloudRes = await uploadToCloudinary(buffer, req.file.originalname, 'swaraj_e_hind').catch(() => null);
+            if (cloudRes) {
+              files.push({
+                provider: 'cloudinary',
+                fileId: cloudRes.publicId,
+                driveLink: cloudRes.secureUrl,
+                downloadLink: cloudRes.secureUrl,
+                localUrl: cloudRes.secureUrl,
+                originalName: req.file.originalname,
+                mimeType: req.file.mimetype,
+                size: cloudRes.bytes
+              });
+            } else {
+              const fileData = await uploadFileToDriveOrLocal(req.file, req).catch(() => null);
+              if (fileData) files.push(fileData);
+            }
           }
+        } else {
+          // PDF/DOC files upload to Google Drive / Local
+          const fileData = await uploadFileToDriveOrLocal(req.file, req).catch(() => null);
+          if (fileData) files.push(fileData);
         }
-      } else {
-        // PDF/DOC files upload to Google Drive / Local
-        const fileData = await uploadFileToDriveOrLocal(req.file, req);
-        if (fileData) files.push(fileData);
+      } catch (fileErr: any) {
+        console.error('File Upload Handling Warning:', fileErr.message);
+        // Fallback local file object
+        const localUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        files.push({
+          provider: 'local',
+          localUrl,
+          driveLink: localUrl,
+          originalName: req.file.originalname,
+          mimeType: req.file.mimetype,
+          size: req.file.size
+        });
       }
     }
 
