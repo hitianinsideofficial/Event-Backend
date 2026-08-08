@@ -23,6 +23,8 @@ export interface EventItem {
   title: string;
   description: string;
   date: string;
+  startDate?: string;
+  endDate?: string;
   location: string;
   organizer: string;
   status: EventStatus;

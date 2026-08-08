@@ -22,6 +22,8 @@ const EventSchema = new Schema<EventDocument>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   date: { type: String, required: true },
+  startDate: { type: String, default: '' },
+  endDate: { type: String, default: '' },
   location: { type: String, required: true },
   organizer: { type: String, default: 'HITian Inside' },
   status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
