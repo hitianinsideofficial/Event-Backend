@@ -75,6 +75,8 @@ export const createEvent = async (req: Request, res: Response) => {
       organizer, 
       status,
       mode,
+      bannerUrl,
+      coverUrl,
       hasAttendance, 
       requireFileUpload, 
       highlights,
@@ -97,6 +99,8 @@ export const createEvent = async (req: Request, res: Response) => {
         organizer: organizer || 'HITian Inside',
         status: status || 'UPCOMING',
         mode: mode || 'OFFLINE',
+        bannerUrl: bannerUrl || '',
+        coverUrl: coverUrl || '',
         hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
@@ -118,6 +122,8 @@ export const createEvent = async (req: Request, res: Response) => {
         organizer: organizer || 'HITian Inside',
         status: status || 'UPCOMING',
         mode: mode || 'OFFLINE',
+        bannerUrl: bannerUrl || '',
+        coverUrl: coverUrl || '',
         hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
@@ -194,6 +200,34 @@ export const updateEventForm = async (req: Request, res: Response) => {
       success: true,
       message: 'Event registration form updated successfully',
       data: event
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    let deleted = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      deleted = await EventModel.findByIdAndDelete(id);
+    }
+
+    if (!deleted) {
+      const idx = sampleEvents.findIndex(e => e.id === id);
+      if (idx !== -1) {
+        sampleEvents.splice(idx, 1);
+        return res.status(200).json({ success: true, message: 'Event deleted from memory' });
+      }
+
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Event permanently deleted from MongoDB Atlas!'
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

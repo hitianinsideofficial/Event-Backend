@@ -9,7 +9,9 @@ export async function connectDB(): Promise<void> {
   }
 
   try {
-    const conn = await mongoose.connect(mongoURI);
+    const conn = await mongoose.connect(mongoURI, {
+      tlsAllowInvalidCertificates: true
+    });
     console.log(`🍃 MongoDB Connected: ${conn.connection.host} (DB: ${conn.connection.name})`);
   } catch (error: any) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);

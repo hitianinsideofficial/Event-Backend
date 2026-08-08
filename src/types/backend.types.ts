@@ -27,6 +27,8 @@ export interface EventItem {
   organizer: string;
   status: EventStatus;
   mode: EventMode;
+  bannerUrl?: string;
+  coverUrl?: string;
   hasAttendance: boolean;
   requireFileUpload: boolean;
   highlights?: EventHighlight[];

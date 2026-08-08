@@ -20,6 +20,8 @@ const EventSchema = new Schema({
     organizer: { type: String, default: 'HITian Inside' },
     status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
     mode: { type: String, enum: ['OFFLINE', 'ONLINE'], default: 'OFFLINE' },
+    bannerUrl: { type: String, default: '' },
+    coverUrl: { type: String, default: '' },
     hasAttendance: { type: Boolean, default: true },
     requireFileUpload: { type: Boolean, default: false },
     highlights: [EventHighlightSchema],

@@ -56,7 +56,7 @@ export const getEventById = async (req, res) => {
 };
 export const createEvent = async (req, res) => {
     try {
-        const { title, description, date, location, organizer, status, mode, hasAttendance, requireFileUpload, highlights, customFields } = req.body;
+        const { title, description, date, location, organizer, status, mode, bannerUrl, coverUrl, hasAttendance, requireFileUpload, highlights, customFields } = req.body;
         if (!title || !description || !date) {
             return res.status(400).json({
                 success: false,
@@ -72,6 +72,8 @@ export const createEvent = async (req, res) => {
                 organizer: organizer || 'HITian Inside',
                 status: status || 'UPCOMING',
                 mode: mode || 'OFFLINE',
+                bannerUrl: bannerUrl || '',
+                coverUrl: coverUrl || '',
                 hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
                 requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
                 highlights: highlights || [],
@@ -93,6 +95,8 @@ export const createEvent = async (req, res) => {
                 organizer: organizer || 'HITian Inside',
                 status: status || 'UPCOMING',
                 mode: mode || 'OFFLINE',
+                bannerUrl: bannerUrl || '',
+                coverUrl: coverUrl || '',
                 hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
                 requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
                 highlights: highlights || [],
@@ -161,6 +165,30 @@ export const updateEventForm = async (req, res) => {
             success: true,
             message: 'Event registration form updated successfully',
             data: event
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+export const deleteEvent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        let deleted = null;
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            deleted = await EventModel.findByIdAndDelete(id);
+        }
+        if (!deleted) {
+            const idx = sampleEvents.findIndex(e => e.id === id);
+            if (idx !== -1) {
+                sampleEvents.splice(idx, 1);
+                return res.status(200).json({ success: true, message: 'Event deleted from memory' });
+            }
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+        return res.status(200).json({
+            success: true,
+            message: 'Event permanently deleted from MongoDB Atlas!'
         });
     }
     catch (error) {
