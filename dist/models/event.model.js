@@ -21,13 +21,13 @@ const EventSchema = new Schema({
     location: { type: String, required: true },
     organizer: { type: String, default: 'HITian Inside' },
     status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
-    mode: { type: String, enum: ['OFFLINE', 'ONLINE'], default: 'OFFLINE' },
-    theme: { type: String, enum: ['DEFAULT', 'TRICOLOUR'], default: 'DEFAULT' },
-    isFlagship: { type: Boolean, default: false },
+    mode: { type: String, enum: ['OFFLINE', 'ONLINE'], default: 'ONLINE' },
+    theme: { type: String, enum: ['DEFAULT', 'TRICOLOUR'], default: 'TRICOLOUR' },
+    isFlagship: { type: Boolean, default: true },
     bannerUrl: { type: String, default: '' },
     coverUrl: { type: String, default: '' },
-    hasAttendance: { type: Boolean, default: true },
-    requireFileUpload: { type: Boolean, default: false },
+    hasAttendance: { type: Boolean, default: false },
+    requireFileUpload: { type: Boolean, default: true },
     highlights: [EventHighlightSchema],
     customFields: [CustomFieldSchema],
     createdAt: { type: String, default: () => new Date().toISOString() }
@@ -43,44 +43,94 @@ EventSchema.set('toJSON', {
     }
 });
 export const EventModel = mongoose.model('Event', EventSchema);
-// Embedded Flagship Preset for Swaraj-E-Hind (Independence Day Celebration)
+// Embedded Flagship Preset for SWARAJ-E-HIND (Independence Day Flagship Online Event)
 export const SWARAJ_E_HIND_PRESET = {
     id: 'swaraj_e_hind_preset',
     title: 'SWARAJ-E-HIND 4.0',
-    description: 'The official trademark Independence Day celebration event of HITian Inside! Showcasing patriotism through music, dance, poetry, drama, and digital arts.',
-    date: 'Aug 15, 2026',
-    startDate: '2026-08-15',
+    description: 'The official trademark Independence Day online submission event of HITian Inside! Showcasing freedom and national pride across 4 domains: Reel Making (TRICOLENS), Artwork & Digital Art (PATRIOT\'S PALETTE), Photography (APERTURE OF FREEDOM), and Creative Writing (INKQUILAB). Deadline: 15 August, 11:59 pm.',
+    date: 'Aug 15, 2026 (Deadline 11:59 PM)',
+    startDate: '2026-08-01',
     endDate: '2026-08-15',
-    location: 'Main Campus Auditorium & Open Air Stage',
+    location: 'Online Submission Portal (HITian Inside Website)',
     organizer: 'HITian Inside',
     status: 'UPCOMING',
-    mode: 'OFFLINE',
+    mode: 'ONLINE',
     theme: 'TRICOLOUR',
     isFlagship: true,
-    hasAttendance: true,
-    requireFileUpload: false,
+    hasAttendance: false,
+    requireFileUpload: true,
     highlights: [
-        { title: 'Grand Stage Performances', description: 'Patriotic Singing, Dancing & Drama Skits' },
-        { title: 'Poetry & Declamation', description: 'Recitation and Freedom Keynote Speeches' },
-        { title: 'Digital Arts Showcase', description: 'Patriotic Painting & Photography Exhibition' }
+        { title: 'TRICOLENS (Reel Making)', description: 'Themes: The Price of Freedom | One Minute Through India\'s Journey | The Cost of One Flag (MP4, Max 1GB)' },
+        { title: 'PATRIOT\'S PALETTE (Artwork & Digital Art)', description: 'Themes: Threads of Unity | Pixels of Patriotism | Youth: The Voice and Today (JPG/PNG/PSD/AI, Max 100MB)' },
+        { title: 'APERTURE OF FREEDOM (Photography)', description: 'Themes: Roots of India | Unsung Heroes | Tiranga Palette (JPG/PNG, Max 100MB)' },
+        { title: 'INKQUILAB (Creative Writing)', description: 'Themes: The Price of Silence | Dreaming India 2047 | The Railway Platform, 1947 (PDF/DOC, 300 words max, Max 10MB)' }
     ],
     customFields: [
-        { id: 'q_dept', label: 'Department & Academic Year', type: 'text', required: true },
         {
-            id: 'q_category',
-            label: 'Participation Category',
+            id: 'q_dept',
+            label: 'Department',
             type: 'select',
             required: true,
             options: [
-                'Patriotic Song / Music',
-                'Solo / Group Dance',
-                'Poetry Recitation / Speech',
-                'Drama / Skit',
-                'Photography / Painting',
-                'General Attendee / Audience'
+                'Agriculture Engineering',
+                'Applied Electronics and Instrumentation Engineering',
+                'Biotechnology',
+                'Computer Science Engineering',
+                'Computer Science Engineering (AIML)',
+                'Computer Science Engineering (CS)',
+                'Computer Science Engineering (DS)',
+                'Chemical Engineering',
+                'Electrical Engineering',
+                'Electronics and Communication Engineering',
+                'Civil Engineering',
+                'Food Technology',
+                'Mechanical Engineering'
             ]
         },
-        { id: 'q_link', label: 'Portfolio / Past Performance Video Link (Optional)', type: 'url', required: false }
+        {
+            id: 'q_year',
+            label: 'Academic Year',
+            type: 'select',
+            required: true,
+            options: [
+                'First Year (26)',
+                'Second Year (25)',
+                'Third Year (27)',
+                'Fourth Year (28)'
+            ]
+        },
+        {
+            id: 'q_roll',
+            label: 'College Roll Number',
+            type: 'text',
+            required: true,
+            description: 'Format: [Year_code]/[Dept_code]/[number] (e.g. 26/CSE/042)'
+        },
+        {
+            id: 'q_domain',
+            label: 'Primary Selected Competition Domain',
+            type: 'select',
+            required: true,
+            options: [
+                'TRICOLENS (Reel Making)',
+                'PATRIOT\'S PALETTE (Artwork and Digital Art)',
+                'APERTURE OF FREEDOM (Photography)',
+                'INKQUILAB (Creative Writing)'
+            ]
+        },
+        {
+            id: 'q_theme',
+            label: 'Selected Domain Theme',
+            type: 'text',
+            required: true,
+            description: 'Choose 1 theme for your selected domain.'
+        },
+        {
+            id: 'q_caption',
+            label: 'Caption / Write-up / Raw Link (Optional)',
+            type: 'textarea',
+            required: false
+        }
     ],
     createdAt: new Date().toISOString()
 };
