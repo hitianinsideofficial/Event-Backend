@@ -128,8 +128,8 @@ The Value Edition is about going beyond celebration and looking at the values th
       options: [
         'First Year (26)',
         'Second Year (25)',
-        'Third Year (27)',
-        'Fourth Year (28)'
+        'Third Year (24)',
+        'Fourth Year (23)'
       ]
     },
     {
