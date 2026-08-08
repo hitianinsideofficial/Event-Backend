@@ -60,7 +60,7 @@ export const SWARAJ_E_HIND_PRESET = {
     hasAttendance: false,
     requireFileUpload: true,
     highlights: [
-        { title: 'TRICOLENS (Reel Making)', description: 'Themes: The Price of Freedom | One Minute Through India\'s Journey | The Cost of One Flag (MP4, Max 1GB)' },
+        { title: 'TRICOLENS (Reel Making)', description: 'Themes: The Price of Freedom | One Minute Through India\'s Journey | The Cost of One Flag (Mandatory Google Drive Link)' },
         { title: 'PATRIOT\'S PALETTE (Artwork & Digital Art)', description: 'Themes: Threads of Unity | Pixels of Patriotism | Youth: The Voice and Today (JPG/PNG/PSD/AI, Max 100MB)' },
         { title: 'APERTURE OF FREEDOM (Photography)', description: 'Themes: Roots of India | Unsung Heroes | Tiranga Palette (JPG/PNG, Max 100MB)' },
         { title: 'INKQUILAB (Creative Writing)', description: 'Themes: The Price of Silence | Dreaming India 2047 | The Railway Platform, 1947 (PDF/DOC, 300 words max, Max 10MB)' }
@@ -126,10 +126,11 @@ export const SWARAJ_E_HIND_PRESET = {
             description: 'Choose 1 theme for your selected domain.'
         },
         {
-            id: 'q_caption',
-            label: 'Caption / Write-up / Raw Link (Optional)',
-            type: 'textarea',
-            required: false
+            id: 'q_link',
+            label: 'Google Drive Video Link (Mandatory for Reels)',
+            type: 'url',
+            required: false,
+            description: 'Mandatory for TRICOLENS Reel submissions. Ensure viewing access is set to Anyone with the link.'
         }
     ],
     createdAt: new Date().toISOString()
