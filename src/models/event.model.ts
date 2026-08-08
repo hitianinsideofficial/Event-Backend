@@ -55,7 +55,7 @@ export const EventModel = mongoose.model<EventDocument>('Event', EventSchema);
 export const SWARAJ_E_HIND_PRESET: EventItem = {
   id: 'swaraj_e_hind_preset',
   title: 'SWARAJ-E-HIND 4.0',
-  description: 'The official trademark Independence Day online submission event of HITian Inside! Showcasing freedom and national pride across 4 domains: Reel Making (TRICOLENS), Artwork & Digital Art (PATRIOT\'S PALETTE), Photography (APERTURE OF FREEDOM), and Creative Writing (INKQUILAB). Deadline: 15 August, 11:59 pm.',
+  description: 'The official Independence Day online submission event of HITian Inside! Showcasing freedom and national pride across 4 domains: Reel Making (TRICOLENS), Artwork & Digital Art (PATRIOT\'S PALETTE), Photography (APERTURE OF FREEDOM), and Creative Writing (INKQUILAB). Deadline: 15 August, 11:59 pm.',
   date: 'Aug 15, 2026 (Deadline 11:59 PM)',
   startDate: '2026-08-01',
   endDate: '2026-08-15',
