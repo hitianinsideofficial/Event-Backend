@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { submitRegistration, getSubmissionByTicket, checkInAttendee, acknowledgeSubmission } from '../controllers/submission.controller.js';
 import { upload } from '../middlewares/upload.middleware.js';
 const router = Router();
-router.post('/', upload.single('file'), submitRegistration);
+router.post('/', upload.any(), submitRegistration);
 router.get('/ticket/:ticketId', getSubmissionByTicket);
 router.post('/checkin', checkInAttendee);
 router.post('/:id/acknowledge', acknowledgeSubmission);

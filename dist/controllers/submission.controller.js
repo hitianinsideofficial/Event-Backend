@@ -87,13 +87,14 @@ export const submitRegistration = async (req, res) => {
         const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
         const ticketId = `HIT-EVT-${randomHex}`;
         const files = [];
-        if (req.file) {
+        const uploadedFile = req.file || (Array.isArray(req.files) ? req.files[0] : null);
+        if (uploadedFile) {
             try {
                 // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary
-                if (req.file.mimetype.startsWith('image/')) {
-                    const buffer = req.file.buffer || (req.file.path && fs.existsSync(req.file.path) ? fs.readFileSync(req.file.path) : null);
+                if (uploadedFile.mimetype.startsWith('image/')) {
+                    const buffer = uploadedFile.buffer || (uploadedFile.path && fs.existsSync(uploadedFile.path) ? fs.readFileSync(uploadedFile.path) : null);
                     if (buffer) {
-                        const cloudRes = await uploadToCloudinary(buffer, req.file.originalname, 'swaraj_e_hind').catch(() => null);
+                        const cloudRes = await uploadToCloudinary(buffer, uploadedFile.originalname, 'swaraj_e_hind').catch(() => null);
                         if (cloudRes) {
                             files.push({
                                 provider: 'cloudinary',
@@ -101,13 +102,13 @@ export const submitRegistration = async (req, res) => {
                                 driveLink: cloudRes.secureUrl,
                                 downloadLink: cloudRes.secureUrl,
                                 localUrl: cloudRes.secureUrl,
-                                originalName: req.file.originalname,
-                                mimeType: req.file.mimetype,
+                                originalName: uploadedFile.originalname,
+                                mimeType: uploadedFile.mimetype,
                                 size: cloudRes.bytes
                             });
                         }
                         else {
-                            const fileData = await uploadFileToDriveOrLocal(req.file, req).catch(() => null);
+                            const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
                             if (fileData)
                                 files.push(fileData);
                         }
@@ -115,7 +116,7 @@ export const submitRegistration = async (req, res) => {
                 }
                 else {
                     // PDF/DOC files upload to Google Drive / Local
-                    const fileData = await uploadFileToDriveOrLocal(req.file, req).catch(() => null);
+                    const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
                     if (fileData)
                         files.push(fileData);
                 }
@@ -123,14 +124,14 @@ export const submitRegistration = async (req, res) => {
             catch (fileErr) {
                 console.error('File Upload Handling Warning:', fileErr.message);
                 // Fallback local file object
-                const localUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+                const localUrl = `${req.protocol}://${req.get('host')}/uploads/${uploadedFile.filename || 'uploaded-file'}`;
                 files.push({
                     provider: 'local',
                     localUrl,
                     driveLink: localUrl,
-                    originalName: req.file.originalname,
-                    mimeType: req.file.mimetype,
-                    size: req.file.size
+                    originalName: uploadedFile.originalname,
+                    mimeType: uploadedFile.mimetype,
+                    size: uploadedFile.size
                 });
             }
         }
