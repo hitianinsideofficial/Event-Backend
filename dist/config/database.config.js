@@ -7,7 +7,7 @@ export async function connectDB() {
     }
     try {
         const conn = await mongoose.connect(mongoURI, {
-            tlsAllowInvalidCertificates: true
+            family: 4
         });
         console.log(`🍃 MongoDB Connected: ${conn.connection.host} (DB: ${conn.connection.name})`);
     }
