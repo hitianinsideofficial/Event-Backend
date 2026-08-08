@@ -125,12 +125,13 @@ export const submitRegistration = async (req: Request, res: Response) => {
         }
       } catch (fileErr: any) {
         console.error('File Upload Handling Warning:', fileErr.message);
-        // Fallback local file object
-        const localUrl = `${req.protocol}://${req.get('host')}/uploads/${uploadedFile.filename || 'uploaded-file'}`;
+        // Fallback in-memory data URI (avoids EROFS write error on Vercel)
+        const base64Data = uploadedFile.buffer ? `data:${uploadedFile.mimetype};base64,${uploadedFile.buffer.toString('base64')}` : '';
+        const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(uploadedFile.originalname)}`;
         files.push({
-          provider: 'local',
-          localUrl,
-          driveLink: localUrl,
+          provider: 'memory_fallback',
+          localUrl: fallbackUrl,
+          driveLink: fallbackUrl,
           originalName: uploadedFile.originalname,
           mimeType: uploadedFile.mimetype,
           size: uploadedFile.size
