@@ -1,5 +1,6 @@
 export type EventStatus = 'UPCOMING' | 'LIVE' | 'DONE';
 export type EventMode = 'OFFLINE' | 'ONLINE';
+export type EventTheme = 'DEFAULT' | 'TRICOLOUR';
 
 export interface EventHighlight {
   icon?: string;
@@ -29,6 +30,8 @@ export interface EventItem {
   organizer: string;
   status: EventStatus;
   mode: EventMode;
+  theme?: EventTheme;
+  isFlagship?: boolean;
   bannerUrl?: string;
   coverUrl?: string;
   hasAttendance: boolean;

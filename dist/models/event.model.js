@@ -22,6 +22,8 @@ const EventSchema = new Schema({
     organizer: { type: String, default: 'HITian Inside' },
     status: { type: String, enum: ['UPCOMING', 'LIVE', 'DONE'], default: 'UPCOMING' },
     mode: { type: String, enum: ['OFFLINE', 'ONLINE'], default: 'OFFLINE' },
+    theme: { type: String, enum: ['DEFAULT', 'TRICOLOUR'], default: 'DEFAULT' },
+    isFlagship: { type: Boolean, default: false },
     bannerUrl: { type: String, default: '' },
     coverUrl: { type: String, default: '' },
     hasAttendance: { type: Boolean, default: true },
@@ -41,4 +43,45 @@ EventSchema.set('toJSON', {
     }
 });
 export const EventModel = mongoose.model('Event', EventSchema);
-export let sampleEvents = [];
+// Embedded Flagship Preset for Swaraj-E-Hind (Independence Day Celebration)
+export const SWARAJ_E_HIND_PRESET = {
+    id: 'swaraj_e_hind_preset',
+    title: 'SWARAJ-E-HIND 4.0',
+    description: 'The official trademark Independence Day celebration event of HITian Inside! Showcasing patriotism through music, dance, poetry, drama, and digital arts.',
+    date: 'Aug 15, 2026',
+    startDate: '2026-08-15',
+    endDate: '2026-08-15',
+    location: 'Main Campus Auditorium & Open Air Stage',
+    organizer: 'HITian Inside',
+    status: 'UPCOMING',
+    mode: 'OFFLINE',
+    theme: 'TRICOLOUR',
+    isFlagship: true,
+    hasAttendance: true,
+    requireFileUpload: false,
+    highlights: [
+        { title: 'Grand Stage Performances', description: 'Patriotic Singing, Dancing & Drama Skits' },
+        { title: 'Poetry & Declamation', description: 'Recitation and Freedom Keynote Speeches' },
+        { title: 'Digital Arts Showcase', description: 'Patriotic Painting & Photography Exhibition' }
+    ],
+    customFields: [
+        { id: 'q_dept', label: 'Department & Academic Year', type: 'text', required: true },
+        {
+            id: 'q_category',
+            label: 'Participation Category',
+            type: 'select',
+            required: true,
+            options: [
+                'Patriotic Song / Music',
+                'Solo / Group Dance',
+                'Poetry Recitation / Speech',
+                'Drama / Skit',
+                'Photography / Painting',
+                'General Attendee / Audience'
+            ]
+        },
+        { id: 'q_link', label: 'Portfolio / Past Performance Video Link (Optional)', type: 'url', required: false }
+    ],
+    createdAt: new Date().toISOString()
+};
+export let sampleEvents = [SWARAJ_E_HIND_PRESET];
