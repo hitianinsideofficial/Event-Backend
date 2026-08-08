@@ -28,24 +28,26 @@ export const getEvents = async (req: Request, res: Response) => {
 };
 
 export const getEventById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  // 1. First check in-memory sampleEvents list (for non-Mongo IDs or instant lookup)
+  const sampleMatch = sampleEvents.find(e => e.id === id || (e as any)._id === id);
+
   try {
-    const { id } = req.params;
-    
     let event = null;
+
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
       event = await EventModel.findById(id);
     }
-    
-    if (!event) {
-      event = await EventModel.findOne({ id }) as any;
+
+    if (!event && sampleMatch) {
+      return res.status(200).json({
+        success: true,
+        data: sampleMatch
+      });
     }
 
     if (!event) {
-      const sample = sampleEvents.find(e => e.id === id);
-      if (sample) {
-        return res.status(200).json({ success: true, data: sample });
-      }
-
       return res.status(404).json({
         success: false,
         message: `Event with id ${id} not found`
@@ -57,9 +59,17 @@ export const getEventById = async (req: Request, res: Response) => {
       data: event
     });
   } catch (error: any) {
-    return res.status(500).json({
+    // 2. Fallback to sampleMatch if MongoDB query times out or errors
+    if (sampleMatch) {
+      return res.status(200).json({
+        success: true,
+        data: sampleMatch
+      });
+    }
+
+    return res.status(404).json({
       success: false,
-      message: 'Error retrieving event',
+      message: `Event with id ${id} not found`,
       error: error.message
     });
   }
@@ -188,7 +198,10 @@ export const updateEventStatus = async (req: Request, res: Response) => {
       });
     }
 
-    const event = await EventModel.findByIdAndUpdate(id, { status }, { new: true });
+    let event = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      event = await EventModel.findByIdAndUpdate(id, { status }, { new: true });
+    }
 
     if (!event) {
       const sample = sampleEvents.find(e => e.id === id);
@@ -214,7 +227,10 @@ export const updateEventForm = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { customFields } = req.body;
 
-    const event = await EventModel.findByIdAndUpdate(id, { customFields }, { new: true });
+    let event = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      event = await EventModel.findByIdAndUpdate(id, { customFields }, { new: true });
+    }
 
     if (!event) {
       const sample = sampleEvents.find(e => e.id === id);
@@ -245,7 +261,7 @@ export const deleteEvent = async (req: Request, res: Response) => {
     }
 
     if (!deleted) {
-      const idx = sampleEvents.findIndex(e => e.id === id);
+      const idx = sampleEvents.findIndex(e => e.id === id || (e as any)._id === id);
       if (idx !== -1) {
         sampleEvents.splice(idx, 1);
         return res.status(200).json({ success: true, message: 'Event deleted from memory' });
