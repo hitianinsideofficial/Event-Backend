@@ -5,6 +5,19 @@ import { uploadToCloudinary } from '../services/cloudinary.service.js';
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { sendRegistrationConfirmationEmail } from '../services/brevo.service.js';
+// Helper to normalize roll number strings e.g. 26/CSE/092 -> 26/CSE/92
+function normalizeRollString(rollStr) {
+    if (!rollStr)
+        return '';
+    const parts = rollStr.trim().split('/');
+    if (parts.length === 3) {
+        const yearCode = parts[0].trim();
+        const deptCode = parts[1].trim();
+        const cleanNum = parts[2].trim().replace(/^0+/, '') || '0';
+        return `${yearCode}/${deptCode}/${cleanNum}`;
+    }
+    return rollStr.trim().toLowerCase();
+}
 export const submitRegistration = async (req, res) => {
     try {
         const { eventId, fullName, email, phone, answers } = req.body;
@@ -13,6 +26,49 @@ export const submitRegistration = async (req, res) => {
                 success: false,
                 message: 'eventId, fullName, email, and Mobile Phone Number are required.'
             });
+        }
+        let parsedAnswers = {};
+        if (typeof answers === 'string') {
+            try {
+                parsedAnswers = JSON.parse(answers);
+            }
+            catch (e) { }
+        }
+        else if (typeof answers === 'object' && answers !== null) {
+            parsedAnswers = answers;
+        }
+        const selectedDomain = parsedAnswers['Selected Domain'];
+        const collegeRoll = parsedAnswers['College Roll Number'];
+        // Check duplicate domain submission for the normalized roll number (092 === 92)
+        if (selectedDomain && collegeRoll) {
+            const normRoll = normalizeRollString(collegeRoll);
+            try {
+                const existingSubs = await SubmissionModel.find({ eventId });
+                const duplicate = existingSubs.find(sub => {
+                    const subRoll = normalizeRollString(sub.answers?.['College Roll Number'] || '');
+                    const subDomain = sub.answers?.['Selected Domain'];
+                    return subRoll === normRoll && subDomain === selectedDomain;
+                });
+                if (duplicate) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `You have ALREADY submitted an entry for ${selectedDomain} (Roll: ${collegeRoll}). Each domain allows only 1 submission.`
+                    });
+                }
+            }
+            catch (checkErr) {
+                const sampleDup = sampleSubmissions.find(sub => {
+                    const subRoll = normalizeRollString(sub.answers?.['College Roll Number'] || '');
+                    const subDomain = sub.answers?.['Selected Domain'];
+                    return sub.eventId === eventId && subRoll === normRoll && subDomain === selectedDomain;
+                });
+                if (sampleDup) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `You have ALREADY submitted an entry for ${selectedDomain} (Roll: ${collegeRoll}). Each domain allows only 1 submission.`
+                    });
+                }
+            }
         }
         let eventTitle = 'Event Registration';
         let eventDate = 'TBD';
@@ -62,16 +118,6 @@ export const submitRegistration = async (req, res) => {
                 if (fileData)
                     files.push(fileData);
             }
-        }
-        let parsedAnswers = {};
-        if (typeof answers === 'string') {
-            try {
-                parsedAnswers = JSON.parse(answers);
-            }
-            catch (e) { }
-        }
-        else if (typeof answers === 'object' && answers !== null) {
-            parsedAnswers = answers;
         }
         const qrPayload = JSON.stringify({ ticketId, eventId, name: fullName, email });
         const qrCodeUrl = await QRCode.toDataURL(qrPayload, {
