@@ -13,7 +13,12 @@ export const verifyCertificate = async (req: Request, res: Response) => {
       });
     }
 
-    let cert = await CertificateModel.findOne({ certificateId: certId });
+    let cert: any = null;
+    try {
+      cert = await CertificateModel.findOne({ certificateId: certId });
+    } catch (dbErr: any) {
+      console.warn('MongoDB certificate lookup warning:', dbErr.message);
+    }
 
     if (!cert) {
       const sample = sampleCertificates.find(c => c.certificateId.toUpperCase() === certId);
