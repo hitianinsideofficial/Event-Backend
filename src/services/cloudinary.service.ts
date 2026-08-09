@@ -1,9 +1,10 @@
-import dotenv from 'dotenv';
-import crypto from 'crypto';
-import FormData from 'form-data';
-import fetch from 'node-fetch';
+import { v2 as cloudinary } from "cloudinary";
 
-dotenv.config();
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export interface CloudinaryUploadResult {
   url: string;
@@ -16,63 +17,51 @@ export interface CloudinaryUploadResult {
 export async function uploadToCloudinary(
   fileBuffer: Buffer,
   fileName: string,
-  folder: string = 'swaraj_e_hind'
+  folder = "swaraj_e_hind"
 ): Promise<CloudinaryUploadResult | null> {
-  let cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
-  let apiKey = process.env.CLOUDINARY_API_KEY || '';
-  let apiSecret = process.env.CLOUDINARY_API_SECRET || '';
-
-  // Fallback parsing from CLOUDINARY_URL if present
-  if ((!cloudName || !apiKey || !apiSecret) && process.env.CLOUDINARY_URL) {
-    try {
-      const match = process.env.CLOUDINARY_URL.match(/cloudinary:\/\/([^:]+):([^@]+)@(.+)/);
-      if (match) {
-        apiKey = match[1];
-        apiSecret = match[2];
-        cloudName = match[3];
-      }
-    } catch (e) {}
-  }
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    console.warn('⚠️ Cloudinary credentials missing in environment variables.');
-    return null;
-  }
-
   try {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const paramsToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
-    const signature = crypto.createHash('sha1').update(paramsToSign).digest('hex');
+    const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
+      process.env;
 
-    const form = new FormData();
-    form.append('file', fileBuffer, { filename: fileName });
-    form.append('api_key', apiKey);
-    form.append('timestamp', timestamp.toString());
-    form.append('folder', folder);
-    form.append('signature', signature);
-
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: 'POST',
-      body: form
-    });
-
-    if (res.ok) {
-      const data: any = await res.json();
-      console.log(`☁️ Cloudinary Upload Success: ${data.secure_url}`);
-      return {
-        url: data.url,
-        secureUrl: data.secure_url,
-        publicId: data.public_id,
-        format: data.format,
-        bytes: data.bytes
-      };
-    } else {
-      const errText = await res.text();
-      console.error('❌ Cloudinary Upload API Error:', errText);
+    if (
+      !CLOUDINARY_CLOUD_NAME ||
+      !CLOUDINARY_API_KEY ||
+      !CLOUDINARY_API_SECRET
+    ) {
+      console.error("❌ Cloudinary environment variables are missing.");
       return null;
     }
-  } catch (err: any) {
-    console.error('❌ Cloudinary Upload Exception:', err.message);
+
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: "image",
+          public_id: fileName.replace(/\.[^/.]+$/, ""),
+        },
+        (error: any, result: any) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      uploadStream.end(fileBuffer);
+    });
+
+    console.log(`☁️ Cloudinary upload successful: ${result.secure_url}`);
+
+    return {
+      url: result.url,
+      secureUrl: result.secure_url,
+      publicId: result.public_id,
+      format: result.format,
+      bytes: result.bytes,
+    };
+  } catch (error) {
+    console.error("❌ Cloudinary upload failed:", error);
     return null;
   }
 }

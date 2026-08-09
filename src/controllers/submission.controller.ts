@@ -93,39 +93,59 @@ export const submitRegistration = async (req: Request, res: Response) => {
     const ticketId = `HIT-EVT-${randomHex}`;
 
     const files: UploadedFile[] = [];
-    const uploadedFile: Express.Multer.File | null = req.file || (Array.isArray(req.files) ? (req.files[0] as Express.Multer.File) : null);
+    const uploadedFilesList: Express.Multer.File[] = [];
+    if (req.file) {
+      uploadedFilesList.push(req.file);
+    } else if (Array.isArray(req.files)) {
+      uploadedFilesList.push(...req.files);
+    } else if (req.files && typeof req.files === 'object') {
+      Object.values(req.files).forEach(fileArray => {
+        if (Array.isArray(fileArray)) {
+          uploadedFilesList.push(...fileArray);
+        }
+      });
+    }
 
-    if (uploadedFile) {
+    for (const uploadedFile of uploadedFilesList) {
       try {
-        // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary
-        if (uploadedFile.mimetype.startsWith('image/')) {
-          const buffer = uploadedFile.buffer || (uploadedFile.path && fs.existsSync(uploadedFile.path) ? fs.readFileSync(uploadedFile.path) : null);
-          if (buffer) {
-            const cloudRes = await uploadToCloudinary(buffer, uploadedFile.originalname, 'swaraj_e_hind').catch(() => null);
-            if (cloudRes) {
-              files.push({
-                provider: 'cloudinary',
-                fileId: cloudRes.publicId,
-                driveLink: cloudRes.secureUrl,
-                downloadLink: cloudRes.secureUrl,
-                localUrl: cloudRes.secureUrl,
-                originalName: uploadedFile.originalname,
-                mimeType: uploadedFile.mimetype,
-                size: cloudRes.bytes
-              });
-            } else {
-              const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
-              if (fileData) files.push(fileData);
-            }
+        const fileBuffer = uploadedFile.buffer;
+
+        // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary using Buffer
+        if (uploadedFile.mimetype.startsWith('image/') && fileBuffer) {
+          const cloudRes = await uploadToCloudinary(fileBuffer, uploadedFile.originalname, 'swaraj_e_hind').catch(() => null);
+          if (cloudRes) {
+            files.push({
+              provider: 'cloudinary',
+              fileId: cloudRes.publicId,
+              driveLink: cloudRes.secureUrl,
+              downloadLink: cloudRes.secureUrl,
+              localUrl: cloudRes.secureUrl,
+              originalName: uploadedFile.originalname,
+              mimeType: uploadedFile.mimetype,
+              size: cloudRes.bytes
+            });
+            continue;
           }
+        }
+
+        // Upload to Google Drive using Buffer stream, or fallback to memory data URI
+        const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
+        if (fileData) {
+          files.push(fileData);
         } else {
-          // PDF/DOC files upload to Google Drive / Local
-          const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
-          if (fileData) files.push(fileData);
+          const base64Data = fileBuffer ? `data:${uploadedFile.mimetype};base64,${fileBuffer.toString('base64')}` : '';
+          const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(uploadedFile.originalname)}`;
+          files.push({
+            provider: 'memory_fallback',
+            localUrl: fallbackUrl,
+            driveLink: fallbackUrl,
+            originalName: uploadedFile.originalname,
+            mimeType: uploadedFile.mimetype,
+            size: uploadedFile.size
+          });
         }
       } catch (fileErr: any) {
-        console.error('File Upload Handling Warning:', fileErr.message);
-        // Fallback in-memory data URI (avoids EROFS write error on Vercel)
+        console.error('File Upload Buffer Processing Warning:', fileErr.message);
         const base64Data = uploadedFile.buffer ? `data:${uploadedFile.mimetype};base64,${uploadedFile.buffer.toString('base64')}` : '';
         const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(uploadedFile.originalname)}`;
         files.push({
