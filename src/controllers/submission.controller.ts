@@ -254,30 +254,26 @@ export const getEventSubmissions = async (req: Request, res: Response) => {
 };
 
 export const getSubmissionByTicket = async (req: Request, res: Response) => {
-  try {
-    const ticketId = (req.params.ticketId as string).toUpperCase();
-    const submission = await SubmissionModel.findOne({ ticketId });
+  const ticketId = (req.params.ticketId as string || '').toUpperCase();
+  const sample = sampleSubmissions.find(s => s.ticketId.toUpperCase() === ticketId);
 
+  try {
+    const submission = await SubmissionModel.findOne({ ticketId });
     if (submission) {
       return res.status(200).json({ success: true, data: submission });
     }
-
-    const sample = sampleSubmissions.find(s => s.ticketId.toUpperCase() === ticketId);
-    if (sample) {
-      return res.status(200).json({ success: true, data: sample });
-    }
-
-    return res.status(404).json({
-      success: false,
-      message: `Ticket ID ${ticketId} not found.`
-    });
   } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: 'Error looking up ticket',
-      error: error.message
-    });
+    console.warn('MongoDB ticket lookup warning:', error.message);
   }
+
+  if (sample) {
+    return res.status(200).json({ success: true, data: sample });
+  }
+
+  return res.status(404).json({
+    success: false,
+    message: `Ticket ID ${ticketId} not found.`
+  });
 };
 
 export const checkInAttendee = async (req: Request, res: Response) => {
@@ -292,7 +288,12 @@ export const checkInAttendee = async (req: Request, res: Response) => {
     }
 
     const targetTicket = (ticketId as string).trim().toUpperCase();
-    let submission = await SubmissionModel.findOne({ ticketId: targetTicket });
+    let submission: any = null;
+    try {
+      submission = await SubmissionModel.findOne({ ticketId: targetTicket });
+    } catch (err: any) {
+      console.warn('MongoDB check-in lookup warning:', err.message);
+    }
 
     if (submission) {
       if (submission.attendanceStatus === 'CHECKED_IN') {
