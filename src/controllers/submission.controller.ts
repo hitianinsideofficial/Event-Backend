@@ -429,3 +429,50 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
   }
 };
 
+export const deleteSubmission = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Submission ID is required' });
+    }
+
+    let deletedDoc: any = null;
+
+    try {
+      if (id.match(/^[0-9a-fA-F]{24}$/)) {
+        deletedDoc = await SubmissionModel.findByIdAndDelete(id);
+      }
+      if (!deletedDoc) {
+        deletedDoc = await SubmissionModel.findOneAndDelete({ ticketId: id.toUpperCase() });
+      }
+    } catch (dbErr) {}
+
+    // Fallback: Delete from sampleSubmissions in memory
+    const sampleIdx = sampleSubmissions.findIndex(s => s.id === id || s.ticketId.toUpperCase() === id.toUpperCase());
+    if (sampleIdx !== -1) {
+      sampleSubmissions.splice(sampleIdx, 1);
+    }
+
+    if (deletedDoc || sampleIdx !== -1) {
+      return res.status(200).json({
+        success: true,
+        message: 'Submission deleted successfully'
+      });
+    }
+
+    return res.status(404).json({
+      success: false,
+      message: 'Submission record not found'
+    });
+  } catch (error: any) {
+    console.error('Delete Submission Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete submission',
+      error: error.message
+    });
+  }
+};
+
+
