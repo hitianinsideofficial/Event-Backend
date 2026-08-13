@@ -5,8 +5,14 @@ import { EventItem, EventStatus, EventMode } from '../types/backend.types.js';
 export const getEvents = async (req: Request, res: Response) => {
   try {
     const includeDone = req.query.includeDone === 'true';
+    const isAdmin = req.query.admin === 'true' || includeDone;
 
-    const filter: any = includeDone ? {} : { status: { $ne: 'DONE' } };
+    const filter: any = {};
+    if (!isAdmin) {
+      filter.status = { $ne: 'DONE' };
+      filter.isHidden = { $ne: true };
+    }
+
     const dbEvents = await EventModel.find(filter).sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -15,9 +21,11 @@ export const getEvents = async (req: Request, res: Response) => {
       data: dbEvents
     });
   } catch (error: any) {
-    const filteredSamples = req.query.includeDone === 'true' 
+    const includeDone = req.query.includeDone === 'true';
+    const isAdmin = req.query.admin === 'true' || includeDone;
+    const filteredSamples = isAdmin 
       ? sampleEvents 
-      : sampleEvents.filter(e => e.status !== 'DONE');
+      : sampleEvents.filter(e => e.status !== 'DONE' && !e.isHidden);
 
     return res.status(200).json({
       success: true,
@@ -273,6 +281,40 @@ export const deleteEvent = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: 'Event permanently deleted from MongoDB Atlas!'
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const toggleEventVisibility = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { isHidden } = req.body;
+
+    let updated = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      updated = await EventModel.findByIdAndUpdate(id, { isHidden: Boolean(isHidden) }, { new: true });
+    }
+
+    if (!updated) {
+      const sample = sampleEvents.find(e => e.id === id || (e as any)._id === id);
+      if (sample) {
+        sample.isHidden = Boolean(isHidden);
+        return res.status(200).json({
+          success: true,
+          message: `Event visibility updated to ${isHidden ? 'HIDDEN' : 'SHOWN ON WEBSITE'}`,
+          data: sample
+        });
+      }
+
+      return res.status(404).json({ success: false, message: 'Event not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Event visibility updated to ${isHidden ? 'HIDDEN' : 'SHOWN ON WEBSITE'}`,
+      data: updated
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

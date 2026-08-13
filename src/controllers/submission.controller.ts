@@ -6,7 +6,7 @@ import { uploadToCloudinary } from '../services/cloudinary.service.js';
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
-import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail } from '../services/brevo.service.js';
+import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail, sendPratidhwaniConfirmationEmail } from '../services/brevo.service.js';
 
 // Helper to normalize roll number strings e.g. 26/CSE/092 -> 26/CSE/92
 function normalizeRollString(rollStr: string): string {
@@ -165,21 +165,27 @@ export const submitRegistration = async (req: Request, res: Response) => {
       width: 300
     });
 
-    // Automated registration confirmation email disabled per requirement.
-    // Registration emails are suppressed; acknowledgment emails are sent when triggered by admin.
-    /*
-    sendRegistrationConfirmationEmail({
-      toEmail: email,
-      toName: fullName,
-      ticketId,
-      eventTitle,
-      eventDate,
-      location,
-      phone,
-      answers: parsedAnswers,
-      qrCodeUrl
-    }).catch(err => console.error('Background Email Dispatch Error:', err));
-    */
+    // Send Pratidhwani Confirmation Email (NOT Submission Acknowledgment Email) for Pratidhwani registrations
+    const isPratidhwaniEvent = Boolean(
+      eventId === 'pratidhawni' ||
+      eventId === 'pratidhwani' ||
+      eventTitle.toLowerCase().includes('pratid') ||
+      parsedAnswers['Payment Status'] === 'PAID'
+    );
+
+    if (isPratidhwaniEvent) {
+      sendPratidhwaniConfirmationEmail({
+        toEmail: email,
+        toName: fullName,
+        ticketId,
+        eventTitle: 'PRATIDHWANI',
+        eventDate: 'August 15, 2026',
+        location: 'Main Campus Grounds & SAC',
+        phone: phone || '',
+        answers: parsedAnswers,
+        qrCodeUrl
+      }).catch(err => console.error('Pratidhwani Confirmation Email Dispatch Error:', err));
+    }
 
     try {
       const newDoc = await SubmissionModel.create({
