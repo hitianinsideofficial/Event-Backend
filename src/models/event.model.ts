@@ -34,6 +34,7 @@ const EventSchema = new Schema<EventDocument>({
   coverUrl: { type: String, default: '' },
   hasAttendance: { type: Boolean, default: false },
   requireFileUpload: { type: Boolean, default: true },
+  isHidden: { type: Boolean, default: false },
   highlights: [EventHighlightSchema],
   customFields: [CustomFieldSchema],
   createdAt: { type: String, default: () => new Date().toISOString() }
@@ -165,4 +166,115 @@ The Value Edition is about going beyond celebration and looking at the values th
   createdAt: new Date().toISOString()
 };
 
-export let sampleEvents: EventItem[] = [SWARAJ_E_HIND_PRESET];
+// Embedded Offline Flagship Preset for PRATIDHWANI (A unit of the Tabloid, Media and Literary Club)
+export const PRATIDHAWNI_PRESET: EventItem = {
+  id: 'pratidhawni',
+  title: 'PRATIDHWANI',
+  description: `PRATIDHWANI - ONE LINER ... ONE LINER..
+A unit of the Tabloid, Media and Literary Club (HITian Inside).
+
+1. What is Pratidhwani?
+Pratidhwani is the flagship offline celebration of Swaraj-e-Hind at HIT Haldia. It offers an interactive live stage for students to perform, express, paint, and speak on critical youth topics.
+
+2. Event Categories:
+- OPEN MIC: Poetry, Music, Stand-up Comedy, Storytelling
+- YOUTH PARLIAMENT: Parliamentary debate, policy & discussion
+- LIVE ART: Canvas painting, live sketching, and poster creation
+
+3. Registration Fee:
+RS. 50/- ONLY per participant. Includes official digital receipt pass with unique QR_UID ticket for event entrance scanning.
+
+4. Post-Registration WhatsApp Group:
+Upon payment confirmation, participants are instantly routed to the official WhatsApp Group for schedules and rules.`,
+  date: 'Aug 15, 2026 (HIT Campus Venue)',
+  startDate: '2026-08-01',
+  endDate: '2026-08-15',
+  location: 'Main Campus Grounds & Student Activity Centre, HIT Haldia',
+  organizer: 'HITian Inside • Tabloid, Media & Literary Club',
+  status: 'UPCOMING',
+  mode: 'OFFLINE',
+  theme: 'TRICOLOUR',
+  isFlagship: true,
+  hasAttendance: true,
+  requireFileUpload: false,
+  highlights: [
+    { 
+      title: 'OPEN MIC', 
+      description: 'Poetry • Music • Stand-up • Storytelling\nUnleash your voice live on stage.' 
+    },
+    { 
+      title: 'YOUTH PARLIAMENT', 
+      description: 'Debate • Policy • Parliamentary Discussion\nSpeak up and represent the leaders of tomorrow.' 
+    },
+    { 
+      title: 'LIVE ART', 
+      description: 'Painting • Sketching • Poster Art\nExpress freedom and creativity live on canvas.' 
+    }
+  ],
+  customFields: [
+    {
+      id: 'q_dept',
+      label: 'Department',
+      type: 'select',
+      required: true,
+      options: [
+        'Agriculture Engineering',
+        'Applied Electronics and Instrumentation Engineering',
+        'Biotechnology',
+        'Computer Science Engineering',
+        'Computer Science Engineering (AIML)',
+        'Computer Science Engineering (CS)',
+        'Computer Science Engineering (DS)',
+        'Chemical Engineering',
+        'Electrical Engineering',
+        'Electronics and Communication Engineering',
+        'Information Technology',
+        'Civil Engineering',
+        'Food Technology',
+        'Mechanical Engineering'
+      ]
+    },
+    {
+      id: 'q_roll',
+      label: 'College Roll Number',
+      type: 'text',
+      required: true,
+      description: 'Format: 25/EE/092'
+    },
+    {
+      id: 'q_phone',
+      label: 'Mobile Number',
+      type: 'text',
+      required: true,
+      description: '10-digit WhatsApp phone number'
+    },
+    {
+      id: 'q_category',
+      label: 'Enrolled Event Option',
+      type: 'select',
+      required: true,
+      options: [
+        'Open Mic',
+        'Live Art',
+        'Youth Parliament'
+      ]
+    },
+    {
+      id: 'q_txn',
+      label: 'Transaction UID',
+      type: 'text',
+      required: true,
+      description: 'UPI / UTR Transaction ID after payment'
+    },
+    {
+      id: 'q_upi',
+      label: 'UPI ID',
+      type: 'text',
+      required: true,
+      description: 'Your UPI VPA (e.g. name@upi)'
+    }
+  ],
+  createdAt: new Date().toISOString()
+};
+
+export let sampleEvents: EventItem[] = [SWARAJ_E_HIND_PRESET, PRATIDHAWNI_PRESET];
