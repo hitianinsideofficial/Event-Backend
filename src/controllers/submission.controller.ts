@@ -548,6 +548,23 @@ export const sendAppreciationEmailController = async (req: Request, res: Respons
       await sub.save();
     }
 
+    // Fetch event metadata to include event banner if available
+    let bannerUrl: string | undefined;
+    try {
+      let eventDoc: any = null;
+      if (sub.eventId && sub.eventId.match(/^[0-9a-fA-F]{24}$/)) {
+        eventDoc = await EventModel.findById(sub.eventId);
+      }
+      if (!eventDoc && sub.eventId) {
+        eventDoc = await EventModel.findOne({ id: sub.eventId });
+      }
+      if (eventDoc && eventDoc.bannerUrl) {
+        bannerUrl = eventDoc.bannerUrl;
+      }
+    } catch (e) {
+      console.warn('Could not fetch event for banner URL:', e);
+    }
+
     // Send the appreciation email with coupon collection details & attached certificate
     const emailSent = await sendParticipationAppreciationEmail({
       toEmail: sub.email,
@@ -557,9 +574,10 @@ export const sendAppreciationEmailController = async (req: Request, res: Respons
       customMessage,
       location: location || 'Garden hut',
       timeSlot: timeSlot || '3:00 PM to 5:00 PM',
-      dateStr: dateStr || '04 Oct 2026',
+      dateStr: dateStr || '04. Oct 2026',
       certificateAttachment,
-      certificateUrl
+      certificateUrl,
+      bannerUrl
     });
 
     return res.status(200).json({

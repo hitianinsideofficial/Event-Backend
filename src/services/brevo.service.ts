@@ -482,6 +482,7 @@ export interface SendAppreciationEmailParams {
     name: string;
   };
   certificateUrl?: string;
+  bannerUrl?: string;
 }
 
 export async function sendParticipationAppreciationEmail(params: SendAppreciationEmailParams): Promise<boolean> {
@@ -494,11 +495,27 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
     timeSlot = '3:00 PM – 5:00 PM',
     dateStr = '04. Oct 2026',
     certificateAttachment,
-    certificateUrl
+    certificateUrl,
+    bannerUrl
   } = params;
 
   const defaultMsg = `We sincerely appreciate your active participation, enthusiasm, and dedication in <strong>${eventTitle}</strong>. Your energy and effort contributed greatly to making this event a grand success!`;
   const messageBody = customMessage ? customMessage.replace(/\n/g, '<br/>') : defaultMsg;
+
+  const isPratidhwani = eventTitle.toLowerCase().includes('pratidhwani');
+
+  // Header background styling: banner image if available, or Pratidhwani crimson-maroon theme if Pratidhwani, else dark slate
+  const headerStyle = bannerUrl 
+    ? `background: linear-gradient(180deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.92) 100%), url('${bannerUrl}') center/cover no-repeat;`
+    : isPratidhwani 
+      ? `background: linear-gradient(135deg, #4a0013 0%, #1a0408 50%, #800020 100%); border-bottom: 2px solid #ff9933;`
+      : `background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);`;
+
+  const brandPillStyle = isPratidhwani
+    ? `background: rgba(255, 153, 51, 0.2); border: 1px solid #ff9933; color: #ffb86c;`
+    : `background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(96, 165, 250, 0.3); color: #93c5fd;`;
+
+  const headerTitleColor = isPratidhwani ? `#ff9933` : `#ffffff`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -531,35 +548,34 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
           border: 1px solid #e5e7eb;
         }
         .header {
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-          padding: 32px 28px;
+          ${headerStyle}
+          padding: 36px 28px;
           text-align: center;
           color: #ffffff;
         }
         .brand-pill {
           display: inline-block;
-          background: rgba(59, 130, 246, 0.15);
-          border: 1px solid rgba(96, 165, 250, 0.3);
-          color: #93c5fd;
+          ${brandPillStyle}
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 1.2px;
-          padding: 4px 14px;
+          padding: 5px 16px;
           border-radius: 9999px;
           margin-bottom: 12px;
         }
         .header-title {
           margin: 0;
-          font-size: 24px;
-          font-weight: 800;
-          color: #ffffff;
+          font-size: 26px;
+          font-weight: 900;
+          color: ${headerTitleColor};
           letter-spacing: -0.3px;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.5);
         }
         .header-sub {
           margin: 6px 0 0 0;
           font-size: 13px;
-          color: #cbd5e1;
+          color: #e2e8f0;
         }
         .content {
           padding: 32px 28px 24px 28px;
@@ -658,9 +674,11 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
     <body>
       <div class="wrapper">
         <div class="main-card">
-          <!-- Header -->
+          <!-- Header with Pratidhwani Banner Styling -->
           <div class="header">
-            <div class="brand-pill">HITian Inside • Official</div>
+            <div class="brand-pill">
+              ${isPratidhwani ? '🇮🇳 HITian Inside • Pratidhwani Flagship' : 'HITian Inside • Official'}
+            </div>
             <h1 class="header-title">${eventTitle}</h1>
             <p class="header-sub">Participation & Appreciation Notification</p>
           </div>
