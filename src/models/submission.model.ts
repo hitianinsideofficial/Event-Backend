@@ -28,6 +28,10 @@ const SubmissionSchema = new Schema<SubmissionDocument>({
   checkedInAt: { type: String, default: null },
   acknowledged: { type: Boolean, default: false },
   acknowledgedAt: { type: String, default: null },
+  appreciationSent: { type: Boolean, default: false },
+  appreciationSentAt: { type: String, default: null },
+  certificateFileUrl: { type: String, default: null },
+  couponCollected: { type: Boolean, default: false },
   createdAt: { type: String, default: () => new Date().toISOString() }
 });
 

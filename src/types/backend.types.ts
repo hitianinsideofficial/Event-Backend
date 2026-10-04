@@ -68,6 +68,10 @@ export interface SubmissionItem {
   checkedInAt?: string | null;
   acknowledged?: boolean;
   acknowledgedAt?: string | null;
+  appreciationSent?: boolean;
+  appreciationSentAt?: string | null;
+  certificateFileUrl?: string | null;
+  couponCollected?: boolean;
   createdAt: string;
 }
 
