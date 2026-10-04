@@ -5,7 +5,7 @@ dotenv.config();
 // Create reusable Nodemailer SMTP transporter (works from any IP / mobile hotspot without REST IP restrictions)
 function getSmtpTransporter() {
   const smtpKey = process.env.BREVO_SMTP_KEY || process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'event@hitianinside.in';
+  const smtpLogin = process.env.BREVO_SMTP_LOGIN || process.env.BREVO_SENDER_EMAIL || process.env.ADMIN_EMAIL || 'event@hitianinside.in';
 
   if (!smtpKey) return null;
 
@@ -14,7 +14,7 @@ function getSmtpTransporter() {
     port: 587,
     secure: false, // TLS
     auth: {
-      user: senderEmail,
+      user: smtpLogin,
       pass: smtpKey
     }
   });
@@ -471,7 +471,7 @@ export async function sendSubmissionAcknowledgmentEmail(params: SendAckEmailPara
 export interface SendAppreciationEmailParams {
   toEmail: string;
   toName: string;
-  ticketId: string;
+  ticketId?: string;
   eventTitle: string;
   customMessage?: string;
   location?: string;
@@ -488,105 +488,230 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
   const {
     toEmail,
     toName,
-    ticketId,
     eventTitle,
     customMessage,
     location = 'Garden hut',
     timeSlot = '3:00 PM – 5:00 PM',
-    dateStr = '04 Oct 2026',
+    dateStr = '04. Oct 2026',
     certificateAttachment,
     certificateUrl
   } = params;
 
-  const defaultMsg = `We truly appreciate your dynamic enthusiasm, hard work, and valuable participation in <strong>${eventTitle}</strong>. Your efforts brought immense energy and creativity to the event!`;
+  const defaultMsg = `We sincerely appreciate your active participation, enthusiasm, and dedication in <strong>${eventTitle}</strong>. Your energy and effort contributed greatly to making this event a grand success!`;
   const messageBody = customMessage ? customMessage.replace(/\n/g, '<br/>') : defaultMsg;
 
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Certificate of Participation - ${eventTitle}</title>
       <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 620px; margin: 0 auto; background: #131b2e; border: 1px solid #3b82f6; border-radius: 20px; padding: 32px; box-shadow: 0 16px 48px rgba(59, 130, 246, 0.18); overflow: hidden; }
-        .brand-bar { height: 6px; background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); border-radius: 3px; margin-bottom: 24px; }
-        .header { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 24px; }
-        .brand-title { color: #ffffff; font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 0.5px; }
-        .sub-title { color: #60a5fa; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 6px; }
-        .appreciation-box { background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(139,92,246,0.15) 100%); border: 1px solid rgba(96,165,250,0.4); padding: 24px; border-radius: 16px; text-align: center; margin-bottom: 24px; }
-        .ticket-badge { background: #1e293b; border: 1px solid #60a5fa; color: #93c5fd; font-family: monospace; font-size: 15px; font-weight: bold; padding: 6px 14px; border-radius: 8px; display: inline-block; margin-top: 12px; }
-        .coupon-card { background: linear-gradient(135deg, rgba(234,179,8,0.15) 0%, rgba(249,115,22,0.15) 100%); border: 1px dashed #f59e0b; padding: 20px; border-radius: 14px; margin-bottom: 24px; }
-        .coupon-title { color: #fbbf24; font-size: 16px; font-weight: 800; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; }
-        .info-grid { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .info-grid td { padding: 6px 0; font-size: 13px; vertical-align: top; }
-        .info-label { color: #94a3b8; font-weight: 600; width: 35%; }
-        .info-val { color: #ffffff; font-weight: 700; }
-        .cert-box { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); padding: 18px; border-radius: 14px; text-align: center; margin-bottom: 24px; }
-        .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #f3f4f6;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          color: #1f2937;
+          -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+          width: 100%;
+          background-color: #f3f4f6;
+          padding: 36px 12px;
+        }
+        .main-card {
+          max-width: 580px;
+          margin: 0 auto;
+          background: #ffffff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+          border: 1px solid #e5e7eb;
+        }
+        .header {
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+          padding: 32px 28px;
+          text-align: center;
+          color: #ffffff;
+        }
+        .brand-pill {
+          display: inline-block;
+          background: rgba(59, 130, 246, 0.15);
+          border: 1px solid rgba(96, 165, 250, 0.3);
+          color: #93c5fd;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1.2px;
+          padding: 4px 14px;
+          border-radius: 9999px;
+          margin-bottom: 12px;
+        }
+        .header-title {
+          margin: 0;
+          font-size: 24px;
+          font-weight: 800;
+          color: #ffffff;
+          letter-spacing: -0.3px;
+        }
+        .header-sub {
+          margin: 6px 0 0 0;
+          font-size: 13px;
+          color: #cbd5e1;
+        }
+        .content {
+          padding: 32px 28px 24px 28px;
+        }
+        .greeting {
+          font-size: 18px;
+          font-weight: 700;
+          color: #111827;
+          margin: 0 0 14px 0;
+        }
+        .message-text {
+          font-size: 14px;
+          line-height: 1.65;
+          color: #4b5563;
+          margin: 0 0 24px 0;
+        }
+        .coupon-box {
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-left: 4px solid #2563eb;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }
+        .coupon-heading {
+          font-size: 14px;
+          font-weight: 700;
+          color: #1e3a8a;
+          margin: 0 0 12px 0;
+          display: flex;
+          align-items: center;
+        }
+        .info-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .info-table td {
+          padding: 6px 0;
+          font-size: 13px;
+          vertical-align: middle;
+        }
+        .info-label {
+          color: #64748b;
+          font-weight: 500;
+          width: 38%;
+        }
+        .info-value {
+          color: #0f172a;
+          font-weight: 600;
+        }
+        .cert-card {
+          background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+          border: 1px solid #bbf7d0;
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          margin-bottom: 12px;
+        }
+        .cert-card h4 {
+          margin: 0 0 6px 0;
+          font-size: 15px;
+          font-weight: 700;
+          color: #166534;
+        }
+        .cert-card p {
+          margin: 0 0 14px 0;
+          font-size: 13px;
+          color: #15803d;
+        }
+        .btn-view {
+          display: inline-block;
+          background: #16a34a;
+          color: #ffffff !important;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 700;
+          padding: 10px 22px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+        }
+        .footer {
+          background: #f8fafc;
+          border-top: 1px solid #e5e7eb;
+          padding: 24px 28px;
+          text-align: center;
+          font-size: 12px;
+          color: #6b7280;
+        }
+        .footer a {
+          color: #2563eb;
+          text-decoration: none;
+          font-weight: 600;
+        }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="brand-bar"></div>
-        <div class="header">
-          <h1 class="brand-title">HITian Inside</h1>
-          <div class="sub-title">Certificate of Appreciation • ${eventTitle}</div>
-        </div>
-
-        <div class="appreciation-box">
-          <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 10px 0;">🌟 Certificate of Appreciation</h2>
-          <p style="color: #e2e8f0; font-size: 14px; line-height: 1.6; margin: 0;">
-            Dear <strong>${toName}</strong>,<br/><br/>
-            ${messageBody}
-          </p>
-          <div class="ticket-badge">Ticket / Registration ID: ${ticketId}</div>
-        </div>
-
-        <!-- Coupon Collection Announcement Box -->
-        <div class="coupon-card">
-          <div class="coupon-title">
-            🎟️ Exclusive Participation Coupon Collection Notice
+      <div class="wrapper">
+        <div class="main-card">
+          <!-- Header -->
+          <div class="header">
+            <div class="brand-pill">HITian Inside • Official</div>
+            <h1 class="header-title">${eventTitle}</h1>
+            <p class="header-sub">Participation & Appreciation Notification</p>
           </div>
-          <p style="color: #cbd5e1; font-size: 13px; line-height: 1.5; margin: 0 0 12px 0;">
-            You can collect your official participation / appreciation coupon at the scheduled venue and time below:
-          </p>
 
-          <table class="info-grid">
-            <tr>
-              <td class="info-label">📍 Venue / Location:</td>
-              <td class="info-val" style="color: #38bdf8;">${location}</td>
-            </tr>
-            <tr>
-              <td class="info-label">📅 Date:</td>
-              <td class="info-val" style="color: #fde047;">${dateStr}</td>
-            </tr>
-            <tr>
-              <td class="info-label">⏰ Time Slot:</td>
-              <td class="info-val" style="color: #4ade80;">${timeSlot}</td>
-            </tr>
-            <tr>
-              <td class="info-label">🎫 Requirement:</td>
-              <td class="info-val" style="color: #f43f5e;">Show your Ticket ID (${ticketId}) at the counter</td>
-            </tr>
-          </table>
-        </div>
+          <!-- Body -->
+          <div class="content">
+            <h2 class="greeting">Dear ${toName},</h2>
+            <div class="message-text">
+              ${messageBody}
+            </div>
 
-        <!-- Certificate Announcement -->
-        <div class="cert-box">
-          <h4 style="color: #34d399; font-size: 15px; margin: 0 0 6px 0;">📜 Official Certificate Attached</h4>
-          <p style="color: #cbd5e1; font-size: 12px; margin: 0 0 12px 0;">
-            ${certificateAttachment ? 'Your official Certificate of Appreciation is attached to this email.' : 'Your official Certificate of Appreciation has been issued.'}
-          </p>
-          ${certificateUrl ? `
-            <a href="${certificateUrl}" target="_blank" style="background: #059669; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: bold; display: inline-block;">
-              📥 View & Download Certificate Online
-            </a>
-          ` : ''}
-        </div>
+            <!-- Coupon Collection Notice -->
+            <div class="coupon-box">
+              <div class="coupon-heading">
+                🎁 Participation Coupon Collection Details
+              </div>
+              <table class="info-table">
+                <tr>
+                  <td class="info-label">📍 Venue / Counter:</td>
+                  <td class="info-value">${location}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">📅 Collection Date:</td>
+                  <td class="info-value">${dateStr}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">⏰ Timing:</td>
+                  <td class="info-value">${timeSlot}</td>
+                </tr>
+              </table>
+            </div>
 
-        <div class="footer">
-          <p>© 2026 HITian Inside. Official Event & Certificate Portal.</p>
-          <p style="font-size: 11px;">Haldia Institute of Technology • Visit us at <a href="https://www.hitianinside.in/" style="color: #60a5fa; text-decoration: none;">www.hitianinside.in</a></p>
+            <!-- Certificate Attachment Box -->
+            <div class="cert-card">
+              <h4>📜 Certificate of Participation</h4>
+              <p>
+                ${certificateAttachment ? 'Your official Certificate has been verified and attached directly to this email.' : 'Your official Certificate of Participation is ready.'}
+              </p>
+              ${certificateUrl ? `
+                <a href="${certificateUrl}" target="_blank" class="btn-view">
+                  View & Download Certificate
+                </a>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="footer">
+            <p style="margin: 0 0 6px 0; font-weight: 600; color: #374151;">HITian Inside • Haldia Institute of Technology</p>
+            <p style="margin: 0;">Need assistance? Visit <a href="https://www.hitianinside.in/" target="_blank">www.hitianinside.in</a></p>
+          </div>
         </div>
       </div>
     </body>
@@ -606,10 +731,11 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
   return await dispatchEmail({
     toEmail,
     toName,
-    subject: `🌟 Certificate of Appreciation & Coupon Collection: ${eventTitle} [Ticket: ${ticketId}]`,
+    subject: `Certificate of Appreciation & Coupon Collection: ${eventTitle}`,
     htmlContent,
     attachments
   });
 }
+
 
 
