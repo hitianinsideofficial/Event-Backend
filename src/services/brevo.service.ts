@@ -502,20 +502,19 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
   const defaultMsg = `We sincerely appreciate your active participation, enthusiasm, and dedication in <strong>${eventTitle}</strong>. Your energy and effort contributed greatly to making this event a grand success!`;
   const messageBody = customMessage ? customMessage.replace(/\n/g, '<br/>') : defaultMsg;
 
-  const isPratidhwani = eventTitle.toLowerCase().includes('pratidhwani');
+  // Theme Colors: Maroon Palette
+  const maroonPrimary = '#800020';
+  const maroonDark = '#4a0013';
+  const maroonLight = '#a31535';
+  const goldAccent = '#e6c594';
 
-  // Header background styling: banner image if available, or Pratidhwani crimson-maroon theme if Pratidhwani, else dark slate
+  // Header background styling: banner image with deep maroon/dark overlay, or pure rich maroon gradient
   const headerStyle = bannerUrl 
-    ? `background: linear-gradient(180deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.92) 100%), url('${bannerUrl}') center/cover no-repeat;`
-    : isPratidhwani 
-      ? `background: linear-gradient(135deg, #4a0013 0%, #1a0408 50%, #800020 100%); border-bottom: 2px solid #ff9933;`
-      : `background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);`;
+    ? `background: linear-gradient(180deg, rgba(42, 6, 14, 0.82) 0%, rgba(26, 4, 8, 0.94) 100%), url('${bannerUrl}') center/cover no-repeat; border-bottom: 2px solid ${maroonPrimary};`
+    : `background: linear-gradient(135deg, ${maroonDark} 0%, #1f0309 50%, ${maroonPrimary} 100%); border-bottom: 2px solid ${goldAccent};`;
 
-  const brandPillStyle = isPratidhwani
-    ? `background: rgba(255, 153, 51, 0.2); border: 1px solid #ff9933; color: #ffb86c;`
-    : `background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(96, 165, 250, 0.3); color: #93c5fd;`;
-
-  const headerTitleColor = isPratidhwani ? `#ff9933` : `#ffffff`;
+  const brandPillStyle = `background: rgba(230, 197, 148, 0.15); border: 1px solid rgba(230, 197, 148, 0.4); color: ${goldAccent};`;
+  const headerTitleColor = `#ffffff`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -528,14 +527,14 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
         body {
           margin: 0;
           padding: 0;
-          background-color: #f3f4f6;
+          background-color: #f8f6f4;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           color: #1f2937;
           -webkit-font-smoothing: antialiased;
         }
         .wrapper {
           width: 100%;
-          background-color: #f3f4f6;
+          background-color: #f8f6f4;
           padding: 36px 12px;
         }
         .main-card {
@@ -544,12 +543,12 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
           background: #ffffff;
           border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-          border: 1px solid #e5e7eb;
+          box-shadow: 0 6px 24px rgba(128, 0, 32, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+          border: 1px solid #ebdcd5;
         }
         .header {
           ${headerStyle}
-          padding: 36px 28px;
+          padding: 38px 28px;
           text-align: center;
           color: #ffffff;
         }
@@ -570,12 +569,12 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
           font-weight: 900;
           color: ${headerTitleColor};
           letter-spacing: -0.3px;
-          text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+          text-shadow: 0 2px 10px rgba(0,0,0,0.6);
         }
         .header-sub {
           margin: 6px 0 0 0;
           font-size: 13px;
-          color: #e2e8f0;
+          color: #f2e2cf;
         }
         .content {
           padding: 32px 28px 24px 28px;
@@ -593,9 +592,9 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
           margin: 0 0 24px 0;
         }
         .coupon-box {
-          background: #f8fafc;
-          border: 1.5px solid #e2e8f0;
-          border-left: 4px solid #2563eb;
+          background: #fff8f8;
+          border: 1.5px solid #f2d6dc;
+          border-left: 4px solid #800020;
           border-radius: 12px;
           padding: 20px;
           margin-bottom: 24px;
@@ -603,7 +602,7 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
         .coupon-heading {
           font-size: 14px;
           font-weight: 700;
-          color: #1e3a8a;
+          color: #800020;
           margin: 0 0 12px 0;
           display: flex;
           align-items: center;
@@ -618,17 +617,17 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
           vertical-align: middle;
         }
         .info-label {
-          color: #64748b;
+          color: #715858;
           font-weight: 500;
           width: 38%;
         }
         .info-value {
-          color: #0f172a;
+          color: #1c0509;
           font-weight: 600;
         }
         .cert-card {
-          background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-          border: 1px solid #bbf7d0;
+          background: linear-gradient(135deg, #fdf8f4 0%, #faede8 100%);
+          border: 1px solid #ebd1c8;
           border-radius: 12px;
           padding: 20px;
           text-align: center;
@@ -638,34 +637,34 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
           margin: 0 0 6px 0;
           font-size: 15px;
           font-weight: 700;
-          color: #166534;
+          color: #800020;
         }
         .cert-card p {
           margin: 0 0 14px 0;
           font-size: 13px;
-          color: #15803d;
+          color: #5c1827;
         }
         .btn-view {
           display: inline-block;
-          background: #16a34a;
+          background: #800020;
           color: #ffffff !important;
           text-decoration: none;
           font-size: 13px;
           font-weight: 700;
           padding: 10px 22px;
           border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+          box-shadow: 0 3px 8px rgba(128, 0, 32, 0.25);
         }
         .footer {
-          background: #f8fafc;
-          border-top: 1px solid #e5e7eb;
+          background: #fdfbf9;
+          border-top: 1px solid #f0e6e2;
           padding: 24px 28px;
           text-align: center;
           font-size: 12px;
-          color: #6b7280;
+          color: #786b67;
         }
         .footer a {
-          color: #2563eb;
+          color: #800020;
           text-decoration: none;
           font-weight: 600;
         }
@@ -674,10 +673,10 @@ export async function sendParticipationAppreciationEmail(params: SendAppreciatio
     <body>
       <div class="wrapper">
         <div class="main-card">
-          <!-- Header with Pratidhwani Banner Styling -->
+          <!-- Header with Maroon / Banner Theme -->
           <div class="header">
             <div class="brand-pill">
-              ${isPratidhwani ? '🇮🇳 HITian Inside • Pratidhwani Flagship' : 'HITian Inside • Official'}
+              HITian Inside • Official
             </div>
             <h1 class="header-title">${eventTitle}</h1>
             <p class="header-sub">Participation & Appreciation Notification</p>
