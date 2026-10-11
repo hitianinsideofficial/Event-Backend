@@ -459,7 +459,7 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
         toName: sub.fullName,
         ticketId: sub.ticketId,
         eventTitle: 'NAVROOPAM v7.0',
-        eventDate: 'October 15 – 24, 2026',
+        eventDate: 'October 10 – 24, 2026',
         location: 'Online Submission Event (HITian Inside Portal)',
         phone: sub.phone || '',
         answers: sub.answers

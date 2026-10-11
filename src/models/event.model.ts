@@ -281,7 +281,7 @@ Upon payment confirmation, participants are instantly routed to the official Wha
 export const NAVROOPAM_PRESET: EventItem = {
   id: '6aca70825588e8009b8e8e83',
   title: 'NAVROOPAM v7.0',
-  description: `The premier Socio-Cultural Festive Celebration of Durga Puja by HITian Inside! Celebrating Maa Durga’s divine arrival and youth expressions through Creative Writing (Inkquilab), Puja Vlog (Reel Making), Puja Photography, and Artwork.
+  description: `The premier Socio-Cultural Festive Celebration of Durga Puja by HITian Inside! Celebrating Maa Durga’s divine arrival and youth expressions through Creative Writing, Puja Vlog (Reel Making), Puja Photography, and Artwork.
 
 1. What is NAVROOPAM?
 NAVROOPAM v7.0 is the grand Durga Puja socio-cultural celebration organized by HITian Inside (Tabloid, Media & Literary Club, HIT Haldia). It showcases student creativity, devotion, artistic culture, and festive emotions.
@@ -294,10 +294,10 @@ NAVROOPAM v7.0 is the grand Durga Puja socio-cultural celebration organized by H
 
 3. Registration & Pass Verification:
 Symbolic fee of ₹9.00 INR per domain entry (commemorating the 9 divine days of Navratri / Durga Puja). Instant verified digital ticket pass with high-res verification QR code issued upon registration.`,
-  date: 'October 15 – 24, 2026',
-  startDate: '2026-10-15',
+  date: 'October 10 – 24, 2026',
+  startDate: '2026-10-10',
   endDate: '2026-10-24',
-  location: 'Central Auditorium & Main Ground, HIT Haldia',
+  location: 'Online Submission & Digital Exhibition',
   organizer: 'HITian Inside (Tabloid, Media & Literary Club)',
   status: 'UPCOMING',
   mode: 'ONLINE',
@@ -310,16 +310,16 @@ Symbolic fee of ₹9.00 INR per domain entry (commemorating the 9 divine days of
   isHidden: false,
   highlights: [
     { 
-      title: 'CREATIVE WRITING', 
-      description: 'Inkquilab • Writing\nThe Trishul Within • The Ashes of Mahishasura • The Third Eye • Maa Durga: Bengal’s Beloved Daughter (ENG/HIN/BEN)' 
+      title: 'PHOTOGRAPHY', 
+      description: 'Puja Photography\nSculpting Ma Shakti • Drishtipat • Pandalverse • Saishab (Under 4 MB)' 
     },
     { 
       title: 'PUJA VLOG', 
       description: 'Reel & Video Vlog\nPandalchemy • Agomoni • Utsavnama • Pujo Diaries (Google Drive MP4 Link)' 
     },
     { 
-      title: 'PHOTOGRAPHY', 
-      description: 'Puja Photography\nSculpting Ma Shakti • Drishtipat • Pandalverse • Saishab (Under 4 MB)' 
+      title: 'CREATIVE WRITING', 
+      description: 'The Trishul Within • The Ashes of Mahishasura • The Third Eye • Maa Durga: Bengal’s Beloved Daughter (ENG/HIN/BEN)' 
     },
     { 
       title: 'ARTWORK', 
