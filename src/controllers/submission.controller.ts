@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import QRCode from 'qrcode';
 import { uploadFileToDriveOrLocal } from '../services/googledrive.service.js';
-import { uploadToCloudinary } from '../services/cloudinary.service.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary.service.js';
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
-import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail, sendPratidhwaniConfirmationEmail, sendParticipationAppreciationEmail } from '../services/brevo.service.js';
-import { uploadImageToImageKit } from '../services/imagekit.service.js';
+import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail, sendPratidhwaniConfirmationEmail, sendNavroopamConfirmationEmail, sendParticipationAppreciationEmail } from '../services/brevo.service.js';
+import { uploadImageToImageKit, deleteFromImageKit } from '../services/imagekit.service.js';
 
 // Helper to normalize roll number strings e.g. 26/CSE/092 -> 26/CSE/92
 function normalizeRollString(rollStr: string): string {
@@ -110,18 +110,20 @@ export const submitRegistration = async (req: Request, res: Response) => {
     for (const uploadedFile of uploadedFilesList) {
       try {
         const fileBuffer = uploadedFile.buffer;
+        const isProof = uploadedFile.fieldname === 'paymentProof' || (uploadedFile.originalname || '').toLowerCase().includes('proof') || (uploadedFile.originalname || '').toLowerCase().includes('payment') || (uploadedFile.originalname || '').toLowerCase().includes('utr') || (uploadedFile.originalname || '').toLowerCase().includes('screen');
+        const origName = isProof && !(uploadedFile.originalname || '').toLowerCase().includes('proof') ? `payment_proof_${uploadedFile.originalname}` : uploadedFile.originalname;
 
-        // If uploaded file is an image (Artwork or Photograph), upload to Cloudinary using Buffer
+        // If uploaded file is an image (Artwork, Photograph, or Payment Proof), upload to Cloudinary using Buffer
         if (uploadedFile.mimetype.startsWith('image/') && fileBuffer) {
-          const cloudRes = await uploadToCloudinary(fileBuffer, uploadedFile.originalname, 'swaraj_e_hind').catch(() => null);
+          const cloudRes = await uploadToCloudinary(fileBuffer, origName, 'swaraj_e_hind').catch(() => null);
           if (cloudRes) {
             files.push({
-              provider: 'cloudinary',
+              provider: isProof ? 'cloudinary_payment_proof' : 'cloudinary',
               fileId: cloudRes.publicId,
               driveLink: cloudRes.secureUrl,
               downloadLink: cloudRes.secureUrl,
               localUrl: cloudRes.secureUrl,
-              originalName: uploadedFile.originalname,
+              originalName: origName,
               mimeType: uploadedFile.mimetype,
               size: cloudRes.bytes
             });
@@ -132,28 +134,31 @@ export const submitRegistration = async (req: Request, res: Response) => {
         // Upload to Google Drive using Buffer stream, or fallback to memory data URI
         const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
         if (fileData) {
+          if (isProof) fileData.provider = 'cloudinary_payment_proof';
           files.push(fileData);
         } else {
           const base64Data = fileBuffer ? `data:${uploadedFile.mimetype};base64,${fileBuffer.toString('base64')}` : '';
-          const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(uploadedFile.originalname)}`;
+          const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(origName)}`;
           files.push({
-            provider: 'memory_fallback',
+            provider: isProof ? 'cloudinary_payment_proof' : 'memory_fallback',
             localUrl: fallbackUrl,
             driveLink: fallbackUrl,
-            originalName: uploadedFile.originalname,
+            originalName: origName,
             mimeType: uploadedFile.mimetype,
             size: uploadedFile.size
           });
         }
       } catch (fileErr: any) {
         console.error('File Upload Buffer Processing Warning:', fileErr.message);
+        const isProof = uploadedFile.fieldname === 'paymentProof' || (uploadedFile.originalname || '').toLowerCase().includes('proof');
+        const origName = isProof && !(uploadedFile.originalname || '').toLowerCase().includes('proof') ? `payment_proof_${uploadedFile.originalname}` : uploadedFile.originalname;
         const base64Data = uploadedFile.buffer ? `data:${uploadedFile.mimetype};base64,${uploadedFile.buffer.toString('base64')}` : '';
-        const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(uploadedFile.originalname)}`;
+        const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(origName)}`;
         files.push({
-          provider: 'memory_fallback',
+          provider: isProof ? 'cloudinary_payment_proof' : 'memory_fallback',
           localUrl: fallbackUrl,
           driveLink: fallbackUrl,
-          originalName: uploadedFile.originalname,
+          originalName: origName,
           mimeType: uploadedFile.mimetype,
           size: uploadedFile.size
         });
@@ -166,27 +171,8 @@ export const submitRegistration = async (req: Request, res: Response) => {
       width: 300
     });
 
-    // Send Pratidhwani Confirmation Email (NOT Submission Acknowledgment Email) for Pratidhwani registrations
-    const isPratidhwaniEvent = Boolean(
-      eventId === 'pratidhawni' ||
-      eventId === 'pratidhwani' ||
-      eventTitle.toLowerCase().includes('pratid') ||
-      parsedAnswers['Payment Status'] === 'PAID'
-    );
-
-    if (isPratidhwaniEvent) {
-      sendPratidhwaniConfirmationEmail({
-        toEmail: email,
-        toName: fullName,
-        ticketId,
-        eventTitle: 'PRATIDHWANI',
-        eventDate: 'August 15, 2026',
-        location: 'Main Campus Grounds & SAC',
-        phone: phone || '',
-        answers: parsedAnswers,
-        qrCodeUrl
-      }).catch(err => console.error('Pratidhwani Confirmation Email Dispatch Error:', err));
-    }
+    // NOTE: Automated email dispatch on registration is disabled.
+    // Emails (acknowledgment / confirmation) are now sent manually by Admin after payment verification from the Admin Panel.
 
     try {
       const newDoc = await SubmissionModel.create({
@@ -244,7 +230,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
 
 export const getEventSubmissions = async (req: Request, res: Response) => {
   try {
-    const eventId = req.params.eventId as string;
+    const eventId = (req.params.eventId || req.query.eventId) as string;
     
     let filter: any = {};
     if (eventId && eventId !== 'all') {
@@ -407,23 +393,61 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
 
     const domainTitle = sub.answers?.['Selected Domain'] || '';
     const themeTitle = sub.answers?.['Selected Theme'] || '';
-    const submissionLink = sub.answers?.['Google Drive Video Reel Link'] || (sub.files && sub.files[0] ? (sub.files[0].driveLink || sub.files[0].localUrl) : '');
+    const submissionLink = sub.answers?.['Google Drive Video Reel Link'] || sub.answers?.['Google Drive Video Link'] || (sub.files && sub.files[0] ? (sub.files[0].driveLink || sub.files[0].localUrl) : '');
 
-    // Dispatch Acknowledgment Email via Brevo
-    sendSubmissionAcknowledgmentEmail({
-      toEmail: sub.email,
-      toName: sub.fullName,
-      ticketId: sub.ticketId,
-      eventTitle: sub.eventTitle,
-      domainTitle,
-      themeTitle,
-      submissionLink,
-      answers: sub.answers
-    }).catch(err => console.error('Background Acknowledgment Email Dispatch Error:', err));
+    const isNavroopam = Boolean(
+      sub.eventId === '6aca70825588e8009b8e8e83' ||
+      (typeof sub.eventId === 'string' && sub.eventId.toLowerCase().includes('nav')) ||
+      sub.eventTitle?.toLowerCase()?.includes('navroopam') ||
+      sub.eventTitle?.toLowerCase()?.includes('navaroopam')
+    );
+
+    const isPratidhwani = Boolean(
+      sub.eventId === 'pratidhawni' ||
+      sub.eventId === 'pratidhwani' ||
+      sub.eventTitle?.toLowerCase()?.includes('pratid')
+    );
+
+    if (isNavroopam) {
+      // Dispatch Navroopam Online Confirmation Email without QR code
+      sendNavroopamConfirmationEmail({
+        toEmail: sub.email,
+        toName: sub.fullName,
+        ticketId: sub.ticketId,
+        eventTitle: 'NAVROOPAM v7.0',
+        eventDate: 'October 15 – 24, 2026',
+        location: 'Online Submission Event (HITian Inside Portal)',
+        phone: sub.phone || '',
+        answers: sub.answers
+      }).catch(err => console.error('Background Navroopam Acknowledgment Email Dispatch Error:', err));
+    } else if (isPratidhwani) {
+      sendPratidhwaniConfirmationEmail({
+        toEmail: sub.email,
+        toName: sub.fullName,
+        ticketId: sub.ticketId,
+        eventTitle: 'PRATIDHWANI',
+        eventDate: 'August 15, 2026',
+        location: 'Main Campus Grounds & SAC',
+        phone: sub.phone || '',
+        answers: sub.answers
+      }).catch(err => console.error('Background Pratidhwani Confirmation Email Dispatch Error:', err));
+    } else {
+      // Dispatch Flagship Online Submission Acknowledgment Email (No QR, Online Event)
+      sendSubmissionAcknowledgmentEmail({
+        toEmail: sub.email,
+        toName: sub.fullName,
+        ticketId: sub.ticketId,
+        eventTitle: sub.eventTitle,
+        domainTitle,
+        themeTitle,
+        submissionLink,
+        answers: sub.answers
+      }).catch(err => console.error('Background Acknowledgment Email Dispatch Error:', err));
+    }
 
     return res.status(200).json({
       success: true,
-      message: `Submission for ${sub.fullName} (${domainTitle || 'Entry'}) acknowledged! Acknowledgment email sent.`,
+      message: `Payment & submission verified for ${sub.fullName} (${domainTitle || 'Entry'}). Acknowledgment email sent successfully!`,
       data: sub
     });
   } catch (err: any) {
@@ -684,6 +708,88 @@ export const deleteCertificateController = async (req: Request, res: Response) =
   }
 };
 
+export const updatePaymentStatus = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { paymentStatus } = req.body;
 
+    if (!['PENDING', 'VERIFIED', 'REJECTED', 'PAID'].includes(paymentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid paymentStatus. Allowed: PENDING, VERIFIED, REJECTED, PAID'
+      });
+    }
 
+    let sub: any = null;
+    if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
+      sub = await SubmissionModel.findById(id);
+    }
+    if (!sub && id) {
+      sub = await SubmissionModel.findOne({ ticketId: id.toUpperCase() });
+    }
+    if (!sub && id) {
+      sub = sampleSubmissions.find(s => s.id === id || s.ticketId.toUpperCase() === id.toUpperCase());
+    }
 
+    if (!sub) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission not found'
+      });
+    }
+
+    sub.paymentStatus = paymentStatus;
+    if (paymentStatus === 'VERIFIED' || paymentStatus === 'PAID') {
+      sub.paymentVerifiedAt = new Date().toISOString();
+
+      // Automatically delete payment screenshot proof from Cloudinary / ImageKit / local storage upon verification
+      if (Array.isArray(sub.files) && sub.files.length > 0) {
+        const remainingFiles = [];
+        for (const fileObj of sub.files) {
+          const nameLower = (fileObj.originalName || '').toLowerCase();
+          const isPaymentProof = nameLower.includes('proof') || 
+                                 nameLower.includes('pay') || 
+                                 nameLower.includes('screen') || 
+                                 nameLower.includes('screenshot') || 
+                                 nameLower.includes('utr') ||
+                                 nameLower.includes('receipt') ||
+                                 fileObj.provider === 'cloudinary_payment_proof' ||
+                                 (sub.files.length > 1 && sub.files.indexOf(fileObj) === sub.files.length - 1);
+
+          if (isPaymentProof) {
+            console.log(`🧹 Payment verified! Cleaning up payment screenshot: ${fileObj.originalName} (${fileObj.provider})`);
+            try {
+              if (fileObj.provider === 'cloudinary' || (fileObj.localUrl && fileObj.localUrl.includes('cloudinary'))) {
+                await deleteFromCloudinary(fileObj.fileId || fileObj.localUrl);
+              } else if (fileObj.provider === 'imagekit' || (fileObj.localUrl && fileObj.localUrl.includes('imagekit'))) {
+                await deleteFromImageKit(fileObj.fileId || fileObj.localUrl);
+              }
+            } catch (cleanupErr) {
+              console.warn('Could not delete payment screenshot from cloud storage:', cleanupErr);
+            }
+          } else {
+            remainingFiles.push(fileObj);
+          }
+        }
+        sub.files = remainingFiles;
+      }
+    }
+
+    if (typeof sub.save === 'function') {
+      await sub.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Payment status updated to ${paymentStatus} for ${sub.fullName}${paymentStatus === 'VERIFIED' ? ' (Payment screenshot proof deleted from cloud storage)' : ''}`,
+      data: sub
+    });
+  } catch (err: any) {
+    console.error('Update Payment Status Error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update payment status',
+      error: err.message
+    });
+  }
+};

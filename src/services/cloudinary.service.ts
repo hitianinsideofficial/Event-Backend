@@ -51,8 +51,6 @@ export async function uploadToCloudinary(
       uploadStream.end(fileBuffer);
     });
 
-    console.log(`☁️ Cloudinary upload successful: ${result.secure_url}`);
-
     return {
       url: result.url,
       secureUrl: result.secure_url,
@@ -63,5 +61,36 @@ export async function uploadToCloudinary(
   } catch (error) {
     console.error("❌ Cloudinary upload failed:", error);
     return null;
+  }
+}
+
+export async function deleteFromCloudinary(publicIdOrUrl: string): Promise<boolean> {
+  try {
+    const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+      console.error("❌ Cloudinary environment variables are missing.");
+      return false;
+    }
+
+    let publicId = publicIdOrUrl;
+    if (publicIdOrUrl.includes('cloudinary.com') || publicIdOrUrl.includes('res.cloudinary.com')) {
+      // Extract public_id from URL: e.g. https://res.cloudinary.com/demo/image/upload/v12345/swaraj_e_hind/proof_123.png -> swaraj_e_hind/proof_123
+      const parts = publicIdOrUrl.split('/upload/');
+      if (parts.length > 1) {
+        const afterUpload = parts[1];
+        // Remove version if present (e.g. v12345678/)
+        const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+        // Remove file extension
+        publicId = withoutVersion.replace(/\.[^/.]+$/, '');
+      }
+    }
+
+    console.log(`🗑️ Deleting file from Cloudinary with publicId: ${publicId}`);
+    const res = await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+    console.log(`🗑️ Cloudinary destroy result:`, res);
+    return res.result === 'ok' || res.result === 'not found';
+  } catch (error) {
+    console.error("❌ Cloudinary delete failed:", error);
+    return false;
   }
 }

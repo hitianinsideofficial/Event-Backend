@@ -337,6 +337,139 @@ export async function sendPratidhwaniConfirmationEmail(params: SendPratidhwaniEm
   });
 }
 
+export interface SendNavroopamEmailParams {
+  toEmail: string;
+  toName: string;
+  ticketId: string;
+  eventTitle: string;
+  eventDate?: string;
+  location?: string;
+  phone?: string;
+  answers?: Record<string, any>;
+  qrCodeUrl?: string;
+}
+
+export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailParams): Promise<boolean> {
+  const { toEmail, toName, ticketId, eventTitle, eventDate, location, phone, answers } = params;
+
+  const selectedDomain = answers?.['Selected Domain'] || 'Navroopam Festive Domain';
+  const selectedTheme = answers?.['Selected Theme'] || '-';
+  const transactionUid = answers?.['Transaction UID (UTR)'] || answers?.['Transaction UID'] || answers?.['UTR Number'] || '-';
+  const rollNumber = answers?.['College Roll Number'] || '-';
+  const department = answers?.['Department'] || '-';
+  const academicYear = answers?.['Academic Year'] || '-';
+  const driveLink = answers?.['Google Drive Video Reel Link'] || answers?.['Google Drive Video Link'] || '';
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #150408; color: #fdfbf7; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #1c060b; border: 2px solid #e6c594; border-radius: 16px; padding: 32px; box-shadow: 0 12px 40px rgba(128, 0, 32, 0.4); overflow: hidden; }
+        .header { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 24px; }
+        .brand-title { color: #e6c594; font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 1px; }
+        .sub-title { color: #fdfbf7; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+        .conf-box { background: linear-gradient(135deg, rgba(128,0,32,0.7) 0%, rgba(47,8,18,0.9) 100%); border: 1px solid #e6c594; padding: 20px; border-radius: 14px; text-align: center; margin-bottom: 24px; }
+        .ticket-badge { background: linear-gradient(135deg, #e6c594 0%, #f7f1e5 100%); color: #150408; font-family: monospace; font-size: 18px; font-weight: 900; padding: 10px 22px; border-radius: 10px; display: inline-block; margin-top: 12px; letter-spacing: 1px; }
+        .detail-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 14px; overflow: hidden; }
+        .detail-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
+        .status-pill { display: inline-block; background: #059669; color: #ffffff; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #a69181; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 class="brand-title">🔱 NAVROOPAM v7.0</h1>
+          <div class="sub-title">Socio-Cultural Festive Celebration • HITian Inside</div>
+        </div>
+
+        <div class="conf-box">
+          <h2 style="color: #ffffff; font-size: 20px; margin: 0 0 6px 0;">✨ Payment Verified & Entry Confirmed!</h2>
+          <p style="color: #e6d7c3; font-size: 13px; margin: 0; line-height: 1.5;">
+            Dear <strong>${toName}</strong>,<br/>
+            Your payment for <strong>NAVROOPAM v7.0</strong> has been verified and approved by the organizing panel. Your competition entry is officially confirmed!
+          </p>
+          <div class="ticket-badge">Ticket ID: ${ticketId}</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <h4 style="color: #e6c594; margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
+            📋 Verified Registration & Entry Summary:
+          </h4>
+
+          <table class="detail-table">
+            <tr>
+              <td style="color: #a69181; font-weight: bold; width: 40%;">Participant Name:</td>
+              <td style="color: #ffffff; font-weight: bold;">${toName}</td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">Email & Phone:</td>
+              <td style="color: #ffffff;">${toEmail} ${phone ? `• ${phone}` : ''}</td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">College Details:</td>
+              <td style="color: #ffffff;">Roll: ${rollNumber} • ${department} (${academicYear})</td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">Competition Domain:</td>
+              <td style="color: #e6c594; font-weight: bold;">${selectedDomain}</td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">Chosen Theme:</td>
+              <td style="color: #ffffff; font-style: italic;">${selectedTheme}</td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">Payment Status:</td>
+              <td><span class="status-pill">✓ CONFIRMED / VERIFIED</span></td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">Transaction UTR:</td>
+              <td style="color: #ffffff; font-family: monospace;">${transactionUid}</td>
+            </tr>
+            <tr>
+              <td style="color: #a69181; font-weight: bold;">Event Mode:</td>
+              <td style="color: #ffffff;">Online Submission Event (October 15 – 24, 2026)</td>
+            </tr>
+          </table>
+
+          ${driveLink ? `
+            <div style="margin-top: 16px; text-align: center;">
+              <a href="${driveLink}" target="_blank" style="background: #800020; color: #e6c594; border: 1px solid #e6c594; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: bold; display: inline-block;">
+                🔗 View Submitted Google Drive Link
+              </a>
+            </div>
+          ` : ''}
+        </div>
+
+        <div style="text-align: center; background: rgba(230,197,148,0.06); padding: 14px; border-radius: 10px; border: 1px dashed rgba(230,197,148,0.3);">
+          <p style="color: #e6c594; font-size: 13px; margin: 0 0 4px 0; font-weight: bold;">
+            🌸 Shubh Durga Puja from HITian Inside!
+          </p>
+          <p style="color: #a69181; font-size: 11px; margin: 0;">
+            Our evaluation committee will review your submission. Stay tuned for results and participation certificates.
+          </p>
+        </div>
+
+        <div class="footer">
+          <p>© 2026 HITian Inside (Tabloid, Media & Literary Club). Official Event Portal.</p>
+          <p style="font-size: 11px;">Visit us at <a href="https://www.hitianinside.in/" style="color: #e6c594; text-decoration: none;">www.hitianinside.in</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail({
+    toEmail,
+    toName,
+    subject: `🔱 Payment Verified & Entry Confirmed: NAVROOPAM v7.0 [Ticket: ${ticketId}]`,
+    htmlContent
+  });
+}
+
 export interface SendAckEmailParams {
   toEmail: string;
   toName: string;
