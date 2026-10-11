@@ -72,6 +72,8 @@ export interface SubmissionItem {
   appreciationSentAt?: string | null;
   certificateFileUrl?: string | null;
   couponCollected?: boolean;
+  paymentStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'PAID';
+  paymentVerifiedAt?: string | null;
   createdAt: string;
 }
 

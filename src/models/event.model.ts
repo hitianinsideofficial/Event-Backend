@@ -277,4 +277,58 @@ Upon payment confirmation, participants are instantly routed to the official Wha
   createdAt: new Date().toISOString()
 };
 
-export let sampleEvents: EventItem[] = [SWARAJ_E_HIND_PRESET, PRATIDHAWNI_PRESET];
+// Embedded Festive Flagship Preset for NAVROOPAM v7.0 (Durga Puja Socio-Cultural Event)
+export const NAVROOPAM_PRESET: EventItem = {
+  id: '6aca70825588e8009b8e8e83',
+  title: 'NAVROOPAM v7.0',
+  description: `The premier Socio-Cultural Festive Celebration of Durga Puja by HITian Inside! Celebrating Maa Durga’s divine arrival and youth expressions through Creative Writing (Inkquilab), Puja Vlog (Reel Making), Puja Photography, and Artwork.
+
+1. What is NAVROOPAM?
+NAVROOPAM v7.0 is the grand Durga Puja socio-cultural celebration organized by HITian Inside (Tabloid, Media & Literary Club, HIT Haldia). It showcases student creativity, devotion, artistic culture, and festive emotions.
+
+2. Competition Domains:
+- CREATIVE WRITING: The Trishul Within, The Ashes of Mahishasura, The Third Eye, Maa Durga: Bengal’s Beloved Daughter (English, Hindi, Bengali)
+- PUJA VLOG (REELS): Pandalchemy, Agomoni, Utsavnama, Pujo Diaries (Drive MP4 Link)
+- PUJA PHOTOGRAPHY: Sculpting Ma Shakti, Drishtipat, Pandalverse, Saishab
+- ARTWORK: Antarshakti, Avirbhava, Shakti Beyond the Idol, Navashakti
+
+3. Registration & Pass Verification:
+Symbolic fee of ₹9.00 INR per domain entry (commemorating the 9 divine days of Navratri / Durga Puja). Instant verified digital ticket pass with high-res verification QR code issued upon registration.`,
+  date: 'October 15 – 24, 2026',
+  startDate: '2026-10-15',
+  endDate: '2026-10-24',
+  location: 'Central Auditorium & Main Ground, HIT Haldia',
+  organizer: 'HITian Inside (Tabloid, Media & Literary Club)',
+  status: 'UPCOMING',
+  mode: 'ONLINE',
+  theme: 'DEFAULT',
+  isFlagship: true,
+  bannerUrl: '/navroopam_banner.png',
+  coverUrl: '/navroopam_banner.png',
+  hasAttendance: false,
+  requireFileUpload: true,
+  isHidden: false,
+  highlights: [
+    { 
+      title: 'CREATIVE WRITING', 
+      description: 'Inkquilab • Writing\nThe Trishul Within • The Ashes of Mahishasura • The Third Eye • Maa Durga: Bengal’s Beloved Daughter (ENG/HIN/BEN)' 
+    },
+    { 
+      title: 'PUJA VLOG', 
+      description: 'Reel & Video Vlog\nPandalchemy • Agomoni • Utsavnama • Pujo Diaries (Google Drive MP4 Link)' 
+    },
+    { 
+      title: 'PHOTOGRAPHY', 
+      description: 'Puja Photography\nSculpting Ma Shakti • Drishtipat • Pandalverse • Saishab (Under 4 MB)' 
+    },
+    { 
+      title: 'ARTWORK', 
+      description: 'Painting • Sketch • Digital Art\nAntarshakti • Avirbhava • Shakti Beyond the Idol • Navashakti (Under 4 MB)' 
+    }
+  ],
+  customFields: [],
+  createdAt: new Date().toISOString()
+};
+
+export let sampleEvents: EventItem[] = [NAVROOPAM_PRESET, SWARAJ_E_HIND_PRESET, PRATIDHAWNI_PRESET];
+

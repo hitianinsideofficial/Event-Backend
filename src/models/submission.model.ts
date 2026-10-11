@@ -32,6 +32,8 @@ const SubmissionSchema = new Schema<SubmissionDocument>({
   appreciationSentAt: { type: String, default: null },
   certificateFileUrl: { type: String, default: null },
   couponCollected: { type: Boolean, default: false },
+  paymentStatus: { type: String, enum: ['PENDING', 'VERIFIED', 'REJECTED', 'PAID'], default: 'PENDING' },
+  paymentVerifiedAt: { type: String, default: null },
   createdAt: { type: String, default: () => new Date().toISOString() }
 });
 

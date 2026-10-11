@@ -38,14 +38,25 @@ export const getEvents = async (req: Request, res: Response) => {
 export const getEventById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // 1. First check in-memory sampleEvents list (for non-Mongo IDs or instant lookup)
-  const sampleMatch = sampleEvents.find(e => e.id === id || (e as any)._id === id);
+  // 1. First check in-memory sampleEvents list (for non-Mongo IDs or alias lookups)
+  const sampleMatch = sampleEvents.find(e => 
+    e.id === id || 
+    (e as any)._id === id || 
+    (id.toLowerCase().includes('nav') && (e.title.toLowerCase().includes('navroopam') || e.id === '6aca70825588e8009b8e8e83'))
+  );
 
   try {
     let event = null;
 
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
       event = await EventModel.findById(id);
+    } else if (id.toLowerCase().includes('nav')) {
+      event = await EventModel.findOne({
+        $or: [
+          { _id: '6aca70825588e8009b8e8e83' as any },
+          { title: { $regex: /navroopam/i } }
+        ]
+      });
     }
 
     if (!event && sampleMatch) {
