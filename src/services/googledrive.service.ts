@@ -20,7 +20,7 @@ export async function uploadFileToDriveOrLocal(file: Express.Multer.File, req: R
       const auth = new google.auth.JWT({
         email: clientEmail,
         key: privateKey.replace(/\\n/g, '\n'),
-        scopes: ['https://www.googleapis.com/auth/drive.file']
+        scopes: ['https://www.googleapis.com/auth/drive']
       });
 
       const drive = google.drive({ version: 'v3', auth });
@@ -46,6 +46,17 @@ export async function uploadFileToDriveOrLocal(file: Express.Multer.File, req: R
         },
         fields: 'id, webViewLink, webContentLink',
       });
+
+      // Grant anyone read access so links can be previewed/downloaded directly in admin
+      if (response.data.id) {
+        await drive.permissions.create({
+          fileId: response.data.id,
+          requestBody: {
+            role: 'reader',
+            type: 'anyone',
+          },
+        }).catch((permErr) => console.warn('Could not set public permission on Drive file:', permErr.message));
+      }
 
       return {
         provider: 'google_drive',
