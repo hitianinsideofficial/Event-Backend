@@ -17,7 +17,7 @@ export interface CloudinaryUploadResult {
 export async function uploadToCloudinary(
   fileBuffer: Buffer,
   fileName: string,
-  folder = "swaraj_e_hind",
+  folder = "hitian_events",
   resourceType: "auto" | "image" | "raw" = "auto"
 ): Promise<CloudinaryUploadResult | null> {
   try {

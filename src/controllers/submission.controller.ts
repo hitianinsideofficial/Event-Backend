@@ -107,6 +107,12 @@ export const submitRegistration = async (req: Request, res: Response) => {
       });
     }
 
+    // Determine event folder name for Cloudinary (e.g., 'navroopam', 'pratidhwani', 'swaraj_e_hind', or clean title)
+    const cleanEventFolder = (eventTitle || 'hitian_events')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'hitian_events';
+
     for (const uploadedFile of uploadedFilesList) {
       try {
         const fileBuffer = uploadedFile.buffer;
@@ -115,7 +121,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
 
         // 1. Primary Upload Target: Cloudinary (Supports Images, PDFs, and Raw files with permanent HTTPS links)
         if (fileBuffer) {
-          const cloudRes = await uploadToCloudinary(fileBuffer, origName, 'swaraj_e_hind', 'auto').catch(() => null);
+          const cloudRes = await uploadToCloudinary(fileBuffer, origName, cleanEventFolder, 'auto').catch(() => null);
           if (cloudRes && cloudRes.secureUrl) {
             files.push({
               provider: isProof ? 'cloudinary_payment_proof' : 'cloudinary',
