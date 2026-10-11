@@ -119,9 +119,27 @@ export const submitRegistration = async (req: Request, res: Response) => {
         const isProof = uploadedFile.fieldname === 'paymentProof' || (uploadedFile.originalname || '').toLowerCase().includes('proof') || (uploadedFile.originalname || '').toLowerCase().includes('payment') || (uploadedFile.originalname || '').toLowerCase().includes('utr') || (uploadedFile.originalname || '').toLowerCase().includes('screen');
         const origName = isProof && !(uploadedFile.originalname || '').toLowerCase().includes('proof') ? `payment_proof_${uploadedFile.originalname}` : uploadedFile.originalname;
 
-        // 1. Primary Upload Target: Cloudinary (Supports Images, PDFs, and Raw files with permanent HTTPS links)
-        if (fileBuffer) {
-          const cloudRes = await uploadToCloudinary(fileBuffer, origName, cleanEventFolder, 'auto').catch(() => null);
+        // 1. If PDF document, prioritize ImageKit (publicly accessible 200 OK without Cloudinary strict ACL blocks)
+        if (fileBuffer && uploadedFile.mimetype === 'application/pdf') {
+          const ikRes = await uploadImageToImageKit(fileBuffer, origName, `/${cleanEventFolder}`).catch(() => null);
+          if (ikRes && ikRes.url) {
+            files.push({
+              provider: isProof ? 'cloudinary_payment_proof' : 'imagekit',
+              fileId: ikRes.fileId,
+              driveLink: ikRes.url,
+              downloadLink: ikRes.url,
+              localUrl: ikRes.url,
+              originalName: origName,
+              mimeType: uploadedFile.mimetype,
+              size: uploadedFile.size
+            });
+            continue;
+          }
+        }
+
+        // 2. Primary Target for Images: Cloudinary (Fast CDN delivery)
+        if (fileBuffer && uploadedFile.mimetype.startsWith('image/')) {
+          const cloudRes = await uploadToCloudinary(fileBuffer, origName, cleanEventFolder, 'image').catch(() => null);
           if (cloudRes && cloudRes.secureUrl) {
             files.push({
               provider: isProof ? 'cloudinary_payment_proof' : 'cloudinary',
@@ -137,9 +155,9 @@ export const submitRegistration = async (req: Request, res: Response) => {
           }
         }
 
-        // 2. Secondary Target: ImageKit (if image)
-        if (fileBuffer && uploadedFile.mimetype.startsWith('image/')) {
-          const ikRes = await uploadImageToImageKit(fileBuffer, origName, '/event-submissions').catch(() => null);
+        // 3. Secondary Target: ImageKit (General Fallback)
+        if (fileBuffer) {
+          const ikRes = await uploadImageToImageKit(fileBuffer, origName, `/${cleanEventFolder}`).catch(() => null);
           if (ikRes && ikRes.url) {
             files.push({
               provider: isProof ? 'cloudinary_payment_proof' : 'imagekit',
