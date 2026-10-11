@@ -17,7 +17,8 @@ export interface CloudinaryUploadResult {
 export async function uploadToCloudinary(
   fileBuffer: Buffer,
   fileName: string,
-  folder = "swaraj_e_hind"
+  folder = "swaraj_e_hind",
+  resourceType: "auto" | "image" | "raw" = "auto"
 ): Promise<CloudinaryUploadResult | null> {
   try {
     const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
@@ -32,12 +33,14 @@ export async function uploadToCloudinary(
       return null;
     }
 
+    const cleanPublicId = `${Date.now()}_${fileName.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/\.[^/.]+$/, "")}`;
+
     const result = await new Promise<any>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder,
-          resource_type: "image",
-          public_id: fileName.replace(/\.[^/.]+$/, ""),
+          resource_type: resourceType,
+          public_id: cleanPublicId,
         },
         (error: any, result: any) => {
           if (error) {

@@ -113,10 +113,10 @@ export const submitRegistration = async (req: Request, res: Response) => {
         const isProof = uploadedFile.fieldname === 'paymentProof' || (uploadedFile.originalname || '').toLowerCase().includes('proof') || (uploadedFile.originalname || '').toLowerCase().includes('payment') || (uploadedFile.originalname || '').toLowerCase().includes('utr') || (uploadedFile.originalname || '').toLowerCase().includes('screen');
         const origName = isProof && !(uploadedFile.originalname || '').toLowerCase().includes('proof') ? `payment_proof_${uploadedFile.originalname}` : uploadedFile.originalname;
 
-        // If uploaded file is an image (Artwork, Photograph, or Payment Proof), upload to Cloudinary using Buffer
-        if (uploadedFile.mimetype.startsWith('image/') && fileBuffer) {
-          const cloudRes = await uploadToCloudinary(fileBuffer, origName, 'swaraj_e_hind').catch(() => null);
-          if (cloudRes) {
+        // 1. Primary Upload Target: Cloudinary (Supports Images, PDFs, and Raw files with permanent HTTPS links)
+        if (fileBuffer) {
+          const cloudRes = await uploadToCloudinary(fileBuffer, origName, 'swaraj_e_hind', 'auto').catch(() => null);
+          if (cloudRes && cloudRes.secureUrl) {
             files.push({
               provider: isProof ? 'cloudinary_payment_proof' : 'cloudinary',
               fileId: cloudRes.publicId,
@@ -125,29 +125,49 @@ export const submitRegistration = async (req: Request, res: Response) => {
               localUrl: cloudRes.secureUrl,
               originalName: origName,
               mimeType: uploadedFile.mimetype,
-              size: cloudRes.bytes
+              size: cloudRes.bytes || uploadedFile.size
             });
             continue;
           }
         }
 
-        // Upload to Google Drive using Buffer stream, or fallback to memory data URI
+        // 2. Secondary Target: ImageKit (if image)
+        if (fileBuffer && uploadedFile.mimetype.startsWith('image/')) {
+          const ikRes = await uploadImageToImageKit(fileBuffer, origName, '/event-submissions').catch(() => null);
+          if (ikRes && ikRes.url) {
+            files.push({
+              provider: isProof ? 'cloudinary_payment_proof' : 'imagekit',
+              fileId: ikRes.fileId,
+              driveLink: ikRes.url,
+              downloadLink: ikRes.url,
+              localUrl: ikRes.url,
+              originalName: origName,
+              mimeType: uploadedFile.mimetype,
+              size: uploadedFile.size
+            });
+            continue;
+          }
+        }
+
+        // 3. Tertiary Target: Google Drive
         const fileData = await uploadFileToDriveOrLocal(uploadedFile, req).catch(() => null);
-        if (fileData) {
+        if (fileData && fileData.provider === 'google_drive') {
           if (isProof) fileData.provider = 'cloudinary_payment_proof';
           files.push(fileData);
-        } else {
-          const base64Data = fileBuffer ? `data:${uploadedFile.mimetype};base64,${fileBuffer.toString('base64')}` : '';
-          const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(origName)}`;
-          files.push({
-            provider: isProof ? 'cloudinary_payment_proof' : 'memory_fallback',
-            localUrl: fallbackUrl,
-            driveLink: fallbackUrl,
-            originalName: origName,
-            mimeType: uploadedFile.mimetype,
-            size: uploadedFile.size
-          });
+          continue;
         }
+
+        // 4. Fallback: Memory data URI
+        const base64Data = fileBuffer ? `data:${uploadedFile.mimetype};base64,${fileBuffer.toString('base64')}` : '';
+        const fallbackUrl = base64Data || `https://via.placeholder.com/800x600.png?text=${encodeURIComponent(origName)}`;
+        files.push({
+          provider: isProof ? 'cloudinary_payment_proof' : 'memory_fallback',
+          localUrl: fallbackUrl,
+          driveLink: fallbackUrl,
+          originalName: origName,
+          mimeType: uploadedFile.mimetype,
+          size: uploadedFile.size
+        });
       } catch (fileErr: any) {
         console.error('File Upload Buffer Processing Warning:', fileErr.message);
         const isProof = uploadedFile.fieldname === 'paymentProof' || (uploadedFile.originalname || '').toLowerCase().includes('proof');
