@@ -33,10 +33,44 @@ export const submitRegistration = async (req: Request, res: Response) => {
   try {
     const { eventId, fullName, email, phone, answers } = req.body;
 
-    if (!eventId || !fullName || !email || !phone) {
+    if (!fullName || !fullName.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'eventId, fullName, email, and Mobile Phone Number are required.'
+        errorCode: 'MISSING_NAME',
+        message: 'Participant Full Name is required.'
+      });
+    }
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'MISSING_EMAIL',
+        message: 'Valid Email address is required to receive event updates.'
+      });
+    }
+
+    // Basic email structure check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'INVALID_EMAIL_FORMAT',
+        message: `The email address "${email}" is invalid. Please check for spelling mistakes.`
+      });
+    }
+
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'MISSING_PHONE',
+        message: 'Active 10-digit WhatsApp/Mobile Number is required.'
+      });
+    }
+
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'MISSING_EVENT_ID',
+        message: 'Event identifier is missing. Please reload the registration page.'
       });
     }
 
@@ -65,7 +99,8 @@ export const submitRegistration = async (req: Request, res: Response) => {
         if (duplicate) {
           return res.status(400).json({
             success: false,
-            message: `You have ALREADY submitted an entry for ${selectedDomain} (Roll: ${collegeRoll}). Each domain allows only 1 submission.`
+            errorCode: 'DUPLICATE_DOMAIN_SUBMISSION',
+            message: `You have ALREADY submitted an entry for "${selectedDomain}" under Roll Number ${collegeRoll}. Each student can submit only once per domain.`
           });
         }
       } catch (checkErr) {
@@ -77,7 +112,8 @@ export const submitRegistration = async (req: Request, res: Response) => {
         if (sampleDup) {
           return res.status(400).json({
             success: false,
-            message: `You have ALREADY submitted an entry for ${selectedDomain} (Roll: ${collegeRoll}). Each domain allows only 1 submission.`
+            errorCode: 'DUPLICATE_DOMAIN_SUBMISSION',
+            message: `You have ALREADY submitted an entry for "${selectedDomain}" under Roll Number ${collegeRoll}. Each student can submit only once per domain.`
           });
         }
       }
@@ -270,11 +306,41 @@ export const submitRegistration = async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error('Submission Error:', error);
+    console.error('Submission Processing Failure [submitRegistration]:', error);
+
+    // 1. MongoDB Duplicate Key (E11000)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] || 'unique field';
+      return res.status(409).json({
+        success: false,
+        errorCode: 'DUPLICATE_ENTRY',
+        message: `A submission with this ${field} already exists in the database. If you believe this is an error, please contact the coordinator desk.`
+      });
+    }
+
+    // 2. Mongoose Schema Validation Error
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors || {}).map((e: any) => e.message).join('; ');
+      return res.status(400).json({
+        success: false,
+        errorCode: 'SCHEMA_VALIDATION_ERROR',
+        message: `Validation error: ${messages}`
+      });
+    }
+
+    // 3. Cloud / Third-party Network Timeout
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.message?.includes('timeout')) {
+      return res.status(504).json({
+        success: false,
+        errorCode: 'CLOUD_STORAGE_TIMEOUT',
+        message: 'Cloud media upload timed out due to slow network. Please compress your files or paste a Google Drive link.'
+      });
+    }
+
     return res.status(500).json({
       success: false,
-      message: 'Failed to process registration',
-      error: error.message
+      errorCode: error.code || 'REGISTRATION_PROCESSING_FAILED',
+      message: `Failed to complete registration: ${error.message || 'Internal server error'}. Please report this with error code.`
     });
   }
 };
