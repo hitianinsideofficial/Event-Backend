@@ -6,7 +6,14 @@ import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
-import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail, sendPratidhwaniConfirmationEmail, sendNavroopamConfirmationEmail, sendParticipationAppreciationEmail } from '../services/brevo.service.js';
+import { 
+  sendRegistrationConfirmationEmail, 
+  sendSubmissionAcknowledgmentEmail, 
+  sendPratidhwaniConfirmationEmail, 
+  sendNavroopamConfirmationEmail, 
+  sendSubmissionReceivedEmail,
+  sendParticipationAppreciationEmail 
+} from '../services/brevo.service.js';
 import { uploadImageToImageKit, deleteFromImageKit } from '../services/imagekit.service.js';
 
 // Helper to normalize roll number strings e.g. 26/CSE/092 -> 26/CSE/92
@@ -26,10 +33,44 @@ export const submitRegistration = async (req: Request, res: Response) => {
   try {
     const { eventId, fullName, email, phone, answers } = req.body;
 
-    if (!eventId || !fullName || !email || !phone) {
+    if (!fullName || !fullName.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'eventId, fullName, email, and Mobile Phone Number are required.'
+        errorCode: 'MISSING_NAME',
+        message: 'Participant Full Name is required.'
+      });
+    }
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'MISSING_EMAIL',
+        message: 'Valid Email address is required to receive event updates.'
+      });
+    }
+
+    // Basic email structure check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'INVALID_EMAIL_FORMAT',
+        message: `The email address "${email}" is invalid. Please check for spelling mistakes.`
+      });
+    }
+
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'MISSING_PHONE',
+        message: 'Active 10-digit WhatsApp/Mobile Number is required.'
+      });
+    }
+
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        errorCode: 'MISSING_EVENT_ID',
+        message: 'Event identifier is missing. Please reload the registration page.'
       });
     }
 
@@ -58,7 +99,8 @@ export const submitRegistration = async (req: Request, res: Response) => {
         if (duplicate) {
           return res.status(400).json({
             success: false,
-            message: `You have ALREADY submitted an entry for ${selectedDomain} (Roll: ${collegeRoll}). Each domain allows only 1 submission.`
+            errorCode: 'DUPLICATE_DOMAIN_SUBMISSION',
+            message: `You have ALREADY submitted an entry for "${selectedDomain}" under Roll Number ${collegeRoll}. Each student can submit only once per domain.`
           });
         }
       } catch (checkErr) {
@@ -70,7 +112,8 @@ export const submitRegistration = async (req: Request, res: Response) => {
         if (sampleDup) {
           return res.status(400).json({
             success: false,
-            message: `You have ALREADY submitted an entry for ${selectedDomain} (Roll: ${collegeRoll}). Each domain allows only 1 submission.`
+            errorCode: 'DUPLICATE_DOMAIN_SUBMISSION',
+            message: `You have ALREADY submitted an entry for "${selectedDomain}" under Roll Number ${collegeRoll}. Each student can submit only once per domain.`
           });
         }
       }
@@ -263,11 +306,41 @@ export const submitRegistration = async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error('Submission Error:', error);
+    console.error('Submission Processing Failure [submitRegistration]:', error);
+
+    // 1. MongoDB Duplicate Key (E11000)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] || 'unique field';
+      return res.status(409).json({
+        success: false,
+        errorCode: 'DUPLICATE_ENTRY',
+        message: `A submission with this ${field} already exists in the database. If you believe this is an error, please contact the coordinator desk.`
+      });
+    }
+
+    // 2. Mongoose Schema Validation Error
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors || {}).map((e: any) => e.message).join('; ');
+      return res.status(400).json({
+        success: false,
+        errorCode: 'SCHEMA_VALIDATION_ERROR',
+        message: `Validation error: ${messages}`
+      });
+    }
+
+    // 3. Cloud / Third-party Network Timeout
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.message?.includes('timeout')) {
+      return res.status(504).json({
+        success: false,
+        errorCode: 'CLOUD_STORAGE_TIMEOUT',
+        message: 'Cloud media upload timed out due to slow network. Please compress your files or paste a Google Drive link.'
+      });
+    }
+
     return res.status(500).json({
       success: false,
-      message: 'Failed to process registration',
-      error: error.message
+      errorCode: error.code || 'REGISTRATION_PROCESSING_FAILED',
+      message: `Failed to complete registration: ${error.message || 'Internal server error'}. Please report this with error code.`
     });
   }
 };
@@ -453,8 +526,8 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
     );
 
     if (isNavroopam) {
-      // Dispatch Navroopam Online Confirmation Email without QR code
-      sendNavroopamConfirmationEmail({
+      // Dispatch Navroopam Submission Received (Payment Under Verification) Email
+      sendSubmissionReceivedEmail({
         toEmail: sub.email,
         toName: sub.fullName,
         ticketId: sub.ticketId,
@@ -491,7 +564,7 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: `Payment & submission verified for ${sub.fullName} (${domainTitle || 'Entry'}). Acknowledgment email sent successfully!`,
+      message: `Acknowledgment email (submission & payment received) sent successfully to ${sub.fullName}!`,
       data: sub
     });
   } catch (err: any) {
@@ -499,6 +572,103 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to acknowledge submission',
+      error: err.message
+    });
+  }
+};
+
+export const sendConfirmationEmail = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { instagramPostUrl } = req.body;
+
+    let sub: any = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      sub = await SubmissionModel.findById(id);
+    }
+    if (!sub && id) {
+      sub = await SubmissionModel.findOne({ ticketId: id.toUpperCase() });
+    }
+    if (!sub) {
+      sub = sampleSubmissions.find(s => s.id === id || s.ticketId?.toUpperCase() === id.toUpperCase());
+    }
+
+    if (!sub) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission record not found.'
+      });
+    }
+
+    // Must be acknowledged first
+    if (!sub.acknowledged) {
+      return res.status(400).json({
+        success: false,
+        message: 'Acknowledgment email must be sent first before sending confirmation email.'
+      });
+    }
+
+    const cleanInstagramUrl = (instagramPostUrl && typeof instagramPostUrl === 'string') 
+      ? instagramPostUrl.trim() 
+      : (sub.instagramPostUrl || '');
+
+    const nowIso = new Date().toISOString();
+    const newPaymentStatus = (sub.paymentStatus === 'PAID') ? 'PAID' : 'VERIFIED';
+    const paymentVerifiedAt = sub.paymentVerifiedAt || nowIso;
+
+    // Update in-memory / document object
+    sub.instagramPostUrl = cleanInstagramUrl;
+    sub.paymentStatus = newPaymentStatus;
+    sub.paymentVerifiedAt = paymentVerifiedAt;
+    sub.confirmationEmailSent = true;
+    sub.confirmationEmailSentAt = nowIso;
+
+    // Persist to MongoDB
+    try {
+      if (typeof sub.save === 'function') {
+        await sub.save();
+      } else {
+        await SubmissionModel.findByIdAndUpdate(
+          sub._id || sub.id,
+          {
+            $set: {
+              instagramPostUrl: cleanInstagramUrl,
+              paymentStatus: newPaymentStatus,
+              paymentVerifiedAt: paymentVerifiedAt,
+              confirmationEmailSent: true,
+              confirmationEmailSentAt: nowIso
+            }
+          },
+          { new: true }
+        );
+      }
+    } catch (saveErr) {
+      console.error('Error saving submission with instagramPostUrl:', saveErr);
+    }
+
+    // Dispatch Confirmation Email with Instagram link
+    sendNavroopamConfirmationEmail({
+      toEmail: sub.email,
+      toName: sub.fullName,
+      ticketId: sub.ticketId,
+      eventTitle: sub.eventTitle || 'NAVROOPAM v7.0',
+      eventDate: 'October 10 – 24, 2026',
+      location: 'Online Submission Event (HITian Inside Portal)',
+      phone: sub.phone || '',
+      answers: sub.answers,
+      instagramPostUrl: sub.instagramPostUrl || undefined
+    }).catch(err => console.error('Background Confirmation Email Dispatch Error:', err));
+
+    return res.status(200).json({
+      success: true,
+      message: `Payment verified & confirmation email with Instagram link sent successfully to ${sub.fullName}!`,
+      data: sub
+    });
+  } catch (err: any) {
+    console.error('Send Confirmation Email Error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send confirmation email',
       error: err.message
     });
   }
