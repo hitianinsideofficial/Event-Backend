@@ -366,96 +366,86 @@ export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailP
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #150408; color: #fdfbf7; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #1c060b; border: 2px solid #e6c594; border-radius: 16px; padding: 32px; box-shadow: 0 12px 40px rgba(128, 0, 32, 0.4); overflow: hidden; }
-        .header { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 24px; }
-        .brand-title { color: #e6c594; font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 1px; }
-        .sub-title { color: #fdfbf7; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
-        .conf-box { background: linear-gradient(135deg, rgba(128,0,32,0.7) 0%, rgba(47,8,18,0.9) 100%); border: 1px solid #e6c594; padding: 20px; border-radius: 14px; text-align: center; margin-bottom: 24px; }
-        .ticket-badge { background: linear-gradient(135deg, #e6c594 0%, #f7f1e5 100%); color: #150408; font-family: monospace; font-size: 18px; font-weight: 900; padding: 10px 22px; border-radius: 10px; display: inline-block; margin-top: 12px; letter-spacing: 1px; }
-        .detail-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 14px; overflow: hidden; }
-        .detail-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
-        .status-pill { display: inline-block; background: #059669; color: #ffffff; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #a69181; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .banner-wrap { width: 100%; background: #150408; text-align: center; }
+        .banner-img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+        .body-content { padding: 32px 28px; }
+        .badge { display: inline-block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 11px; font-weight: bold; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 12px; }
+        .title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; }
+        .subtext { font-size: 13px; color: #475569; margin: 0 0 20px 0; line-height: 1.5; }
+        .table-box { width: 100%; border-collapse: collapse; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 24px; font-size: 13px; }
+        .table-box td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .table-label { color: #64748b; font-weight: 600; width: 40%; }
+        .table-val { color: #0f172a; font-weight: 700; }
+        .ig-box { background: #0f172a; color: #ffffff; padding: 20px; border-radius: 6px; text-align: center; margin-bottom: 24px; }
+        .ig-btn { display: inline-block; background: linear-gradient(135deg, #e11d48, #d97706); color: #ffffff; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; padding: 10px 20px; border-radius: 4px; margin-top: 12px; }
+        .contact-box { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 14px 18px; border-radius: 6px; font-size: 12px; color: #334155; margin-bottom: 24px; }
+        .footer { text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 24px; }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="header">
-          <h1 class="brand-title">🔱 NAVROOPAM v7.0</h1>
-          <div class="sub-title">Socio-Cultural Festive Celebration • HITian Inside</div>
+        <div class="banner-wrap">
+          <img src="https://hitianinside.in/navroopam_banner.png" alt="NAVROOPAM v7.0" class="banner-img" />
         </div>
 
-        <div class="conf-box">
-          <h2 style="color: #ffffff; font-size: 20px; margin: 0 0 6px 0;">✨ Payment Verified & Entry Confirmed!</h2>
-          <p style="color: #e6d7c3; font-size: 13px; margin: 0; line-height: 1.5;">
+        <div class="body-content">
+          <div class="badge">Payment Verified & Published</div>
+          <h1 class="title">Payment Verified: NAVROOPAM v7.0</h1>
+          <p class="subtext">
             Dear <strong>${toName}</strong>,<br/>
-            Your payment for <strong>NAVROOPAM v7.0</strong> has been verified and approved by the organizing panel. Your competition entry is officially confirmed!
+            Your payment for <strong>NAVROOPAM v7.0</strong> has been verified by the organizing team. Your submission has been published on our official Instagram page.
           </p>
-          <div class="ticket-badge">Ticket ID: ${ticketId}</div>
-        </div>
 
-        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-          <h4 style="color: #e6c594; margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
-            📋 Verified Registration & Entry Summary:
-          </h4>
-
-          <table class="detail-table">
+          <table class="table-box">
             <tr>
-              <td style="color: #a69181; font-weight: bold; width: 40%;">Participant Name:</td>
-              <td style="color: #ffffff; font-weight: bold;">${toName}</td>
+              <td class="table-label">Participant Name</td>
+              <td class="table-val">${toName}</td>
             </tr>
             <tr>
-              <td style="color: #a69181; font-weight: bold;">Email & Phone:</td>
-              <td style="color: #ffffff;">${toEmail} ${phone ? `• ${phone}` : ''}</td>
+              <td class="table-label">Registration Pass</td>
+              <td class="table-val" style="font-family: monospace;">${ticketId}</td>
             </tr>
             <tr>
-              <td style="color: #a69181; font-weight: bold;">College Details:</td>
-              <td style="color: #ffffff;">Roll: ${rollNumber} • ${department} (${academicYear})</td>
+              <td class="table-label">Selected Domain</td>
+              <td class="table-val">${selectedDomain}</td>
             </tr>
             <tr>
-              <td style="color: #a69181; font-weight: bold;">Competition Domain:</td>
-              <td style="color: #e6c594; font-weight: bold;">${selectedDomain}</td>
+              <td class="table-label">Chosen Theme</td>
+              <td class="table-val">${selectedTheme}</td>
             </tr>
             <tr>
-              <td style="color: #a69181; font-weight: bold;">Chosen Theme:</td>
-              <td style="color: #ffffff; font-style: italic;">${selectedTheme}</td>
+              <td class="table-label">Payment Status</td>
+              <td class="table-val" style="color: #059669;">VERIFIED & RECONCILED</td>
             </tr>
             <tr>
-              <td style="color: #a69181; font-weight: bold;">Payment Status:</td>
-              <td><span class="status-pill">✓ CONFIRMED / VERIFIED</span></td>
-            </tr>
-            <tr>
-              <td style="color: #a69181; font-weight: bold;">Transaction UTR:</td>
-              <td style="color: #ffffff; font-family: monospace;">${transactionUid}</td>
-            </tr>
-            <tr>
-              <td style="color: #a69181; font-weight: bold;">Event Mode:</td>
-              <td style="color: #ffffff;">Online Submission Event (October 15 – 24, 2026)</td>
+              <td class="table-label">Transaction UTR</td>
+              <td class="table-val" style="font-family: monospace;">${transactionUid}</td>
             </tr>
           </table>
 
-          ${driveLink ? `
-            <div style="margin-top: 16px; text-align: center;">
-              <a href="${driveLink}" target="_blank" style="background: #800020; color: #e6c594; border: 1px solid #e6c594; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: bold; display: inline-block;">
-                🔗 View Submitted Google Drive Link
-              </a>
-            </div>
-          ` : ''}
-        </div>
+          <div class="ig-box">
+            <div style="font-size: 13px; font-weight: 700; color: #fde68a;">Official Instagram Feature</div>
+            <p style="font-size: 12px; color: #cbd5e1; margin: 6px 0 0 0;">
+              Your submission is live on our page. Click below to view and share your post.
+            </p>
+            <a href="https://www.instagram.com/hitianinside/" class="ig-btn" target="_blank">
+              View Your Submission on Instagram
+            </a>
+          </div>
 
-        <div style="text-align: center; background: rgba(230,197,148,0.06); padding: 14px; border-radius: 10px; border: 1px dashed rgba(230,197,148,0.3);">
-          <p style="color: #e6c594; font-size: 13px; margin: 0 0 4px 0; font-weight: bold;">
-            🌸 Shubh Durga Puja from HITian Inside!
-          </p>
-          <p style="color: #a69181; font-size: 11px; margin: 0;">
-            Our evaluation committee will review your submission. Stay tuned for results and participation certificates.
-          </p>
-        </div>
+          <div class="contact-box">
+            <strong>Questions or Queries?</strong><br/>
+            If you have any questions regarding evaluation or updates, contact our desk at:
+            <br/>
+            <span style="font-family: monospace; font-weight: bold; color: #0f172a;">event@hitianinside.in &bull; hitianinside@gmail.com</span>
+          </div>
 
-        <div class="footer">
-          <p>© 2026 HITian Inside (Tabloid, Media & Literary Club). Official Event Portal.</p>
-          <p style="font-size: 11px;">Visit us at <a href="https://www.hitianinside.in/" style="color: #e6c594; text-decoration: none;">www.hitianinside.in</a></p>
+          <div class="footer">
+            <p>© 2026 HITian Inside &bull; Haldia Institute of Technology</p>
+            <p style="margin-top: 4px;">Official Student Tabloid, Media & Socio-Cultural Club</p>
+          </div>
         </div>
       </div>
     </body>
@@ -465,7 +455,7 @@ export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailP
   return await dispatchEmail({
     toEmail,
     toName,
-    subject: `🔱 Payment Verified & Entry Confirmed: NAVROOPAM v7.0 [Ticket: ${ticketId}]`,
+    subject: `Payment Verified & Featured on Instagram: NAVROOPAM v7.0 [Pass: ${ticketId}]`,
     htmlContent
   });
 }
