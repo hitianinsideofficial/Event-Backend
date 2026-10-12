@@ -498,7 +498,7 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: `Acknowledgment email (submission received & under verification) sent successfully to ${sub.fullName}!`,
+      message: `Acknowledgment email (submission & payment received) sent successfully to ${sub.fullName}!`,
       data: sub
     });
   } catch (err: any) {
