@@ -347,10 +347,114 @@ export interface SendNavroopamEmailParams {
   phone?: string;
   answers?: Record<string, any>;
   qrCodeUrl?: string;
+  instagramPostUrl?: string;
+}
+
+export async function sendSubmissionReceivedEmail(params: SendNavroopamEmailParams): Promise<boolean> {
+  const { toEmail, toName, ticketId, eventTitle, answers } = params;
+
+  const selectedDomain = answers?.['Selected Domain'] || 'General Entry';
+  const selectedTheme = answers?.['Selected Theme'] || '-';
+  const transactionUid = answers?.['Transaction UID (UTR)'] || answers?.['Transaction UID'] || answers?.['UTR Number'] || '-';
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .banner-wrap { width: 100%; background: #150408; text-align: center; }
+        .banner-img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+        .body-content { padding: 32px 28px; }
+        .badge { display: inline-block; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; font-size: 11px; font-weight: bold; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 12px; }
+        .title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; }
+        .subtext { font-size: 13px; color: #475569; margin: 0 0 20px 0; line-height: 1.5; }
+        .table-box { width: 100%; border-collapse: collapse; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 20px; font-size: 13px; }
+        .table-box td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .table-label { color: #64748b; font-weight: 600; width: 40%; }
+        .table-val { color: #0f172a; font-weight: 700; }
+        .info-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: 6px; font-size: 12px; color: #78350f; line-height: 1.5; margin-bottom: 20px; }
+        .contact-box { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 14px 18px; border-radius: 6px; font-size: 12px; color: #334155; margin-bottom: 20px; }
+        .footer { text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 24px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="banner-wrap">
+          <img src="https://ik.imagekit.io/n6cw3mewa/navroopam_banner.png" alt="${eventTitle || 'Event'}" class="banner-img" />
+        </div>
+
+        <div class="body-content">
+          <div class="badge">Payment Status: Under Verification</div>
+          <h1 class="title">We Have Received Your Submission</h1>
+          <p class="subtext">
+            Dear <strong>${toName}</strong>,<br/>
+            Thank you for registering for <strong>${eventTitle || 'NAVROOPAM v7.0'}</strong>. Your submission entry has been received and logged into our portal.
+          </p>
+
+          <table class="table-box">
+            <tr>
+              <td class="table-label">Participant Name</td>
+              <td class="table-val">${toName}</td>
+            </tr>
+            <tr>
+              <td class="table-label">Registration Pass</td>
+              <td class="table-val" style="font-family: monospace;">${ticketId}</td>
+            </tr>
+            <tr>
+              <td class="table-label">Selected Domain</td>
+              <td class="table-val">${selectedDomain}</td>
+            </tr>
+            <tr>
+              <td class="table-label">Chosen Theme</td>
+              <td class="table-val">${selectedTheme}</td>
+            </tr>
+            <tr>
+              <td class="table-label">Payment Status</td>
+              <td class="table-val" style="color: #b45309; font-weight: bold;">UNDER VERIFICATION</td>
+            </tr>
+            <tr>
+              <td class="table-label">Transaction UTR</td>
+              <td class="table-val" style="font-family: monospace;">${transactionUid}</td>
+            </tr>
+          </table>
+
+          <div class="info-box">
+            <strong>Next Steps & Manual Verification:</strong><br/>
+            Our organizing panel is currently cross-checking your 12-digit transaction UTR with bank records.
+            Once verified and approved, we will post your submission onto our official Instagram page.
+            You will then receive a confirmation email containing the link to your live Instagram post.
+          </div>
+
+          <div class="contact-box">
+            <strong>Questions or Queries?</strong><br/>
+            If you have any questions or need to rectify your submission details, please email our coordination team:
+            <br/>
+            <span style="font-family: monospace; font-weight: bold; color: #0f172a;">event@hitianinside.in &bull; hitianinside@gmail.com</span>
+          </div>
+
+          <div class="footer">
+            <p>© 2026 HITian Inside &bull; Haldia Institute of Technology</p>
+            <p style="margin-top: 4px;">Official Student Tabloid, Media & Socio-Cultural Club</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail({
+    toEmail,
+    toName,
+    subject: `Submission Received: ${eventTitle || 'NAVROOPAM v7.0'} [Pass: ${ticketId}]`,
+    htmlContent
+  });
 }
 
 export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailParams): Promise<boolean> {
-  const { toEmail, toName, ticketId, eventTitle, eventDate, location, phone, answers } = params;
+  const { toEmail, toName, ticketId, eventTitle, eventDate, location, phone, answers, instagramPostUrl } = params;
 
   const selectedDomain = answers?.['Selected Domain'] || 'Navroopam Festive Domain';
   const selectedTheme = answers?.['Selected Theme'] || '-';
@@ -359,6 +463,7 @@ export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailP
   const department = answers?.['Department'] || '-';
   const academicYear = answers?.['Academic Year'] || '-';
   const driveLink = answers?.['Google Drive Video Reel Link'] || answers?.['Google Drive Video Link'] || '';
+  const postUrl = (instagramPostUrl && instagramPostUrl.trim()) ? instagramPostUrl.trim() : 'https://www.instagram.com/hitianinside/';
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -387,7 +492,7 @@ export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailP
     <body>
       <div class="container">
         <div class="banner-wrap">
-          <img src="https://hitianinside.in/navroopam_banner.png" alt="NAVROOPAM v7.0" class="banner-img" />
+          <img src="https://ik.imagekit.io/n6cw3mewa/navroopam_banner.png" alt="NAVROOPAM v7.0" class="banner-img" />
         </div>
 
         <div class="body-content">
@@ -430,7 +535,7 @@ export async function sendNavroopamConfirmationEmail(params: SendNavroopamEmailP
             <p style="font-size: 12px; color: #cbd5e1; margin: 6px 0 0 0;">
               Your submission is live on our page. Click below to view and share your post.
             </p>
-            <a href="https://www.instagram.com/hitianinside/" class="ig-btn" target="_blank">
+            <a href="${postUrl}" class="ig-btn" target="_blank">
               View Your Submission on Instagram
             </a>
           </div>

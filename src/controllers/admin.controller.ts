@@ -20,11 +20,19 @@ export const adminLogin = (req: Request, res: Response) => {
       });
     }
 
-    if (email.trim().toLowerCase() !== targetEmail.trim().toLowerCase() || password !== targetPassword) {
+    if (email.trim().toLowerCase() !== targetEmail.trim().toLowerCase()) {
       recordLoginLog(email, 'admin', 'FAILED', req);
       return res.status(401).json({
         success: false,
-        message: 'Invalid Admin Email or Password'
+        message: 'Admin email not found. Please verify your address.'
+      });
+    }
+
+    if (password !== targetPassword) {
+      recordLoginLog(email, 'admin', 'FAILED', req);
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect password. Please re-enter your password.'
       });
     }
 

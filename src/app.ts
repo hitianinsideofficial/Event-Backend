@@ -33,6 +33,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', indexRoutes);
+app.use('/', indexRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

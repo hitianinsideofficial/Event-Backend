@@ -6,7 +6,14 @@ import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary
 import { EventModel } from '../models/event.model.js';
 import { SubmissionModel, sampleSubmissions } from '../models/submission.model.js';
 import { SubmissionItem, UploadedFile } from '../types/backend.types.js';
-import { sendRegistrationConfirmationEmail, sendSubmissionAcknowledgmentEmail, sendPratidhwaniConfirmationEmail, sendNavroopamConfirmationEmail, sendParticipationAppreciationEmail } from '../services/brevo.service.js';
+import { 
+  sendRegistrationConfirmationEmail, 
+  sendSubmissionAcknowledgmentEmail, 
+  sendPratidhwaniConfirmationEmail, 
+  sendNavroopamConfirmationEmail, 
+  sendSubmissionReceivedEmail,
+  sendParticipationAppreciationEmail 
+} from '../services/brevo.service.js';
 import { uploadImageToImageKit, deleteFromImageKit } from '../services/imagekit.service.js';
 
 // Helper to normalize roll number strings e.g. 26/CSE/092 -> 26/CSE/92
@@ -453,8 +460,8 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
     );
 
     if (isNavroopam) {
-      // Dispatch Navroopam Online Confirmation Email without QR code
-      sendNavroopamConfirmationEmail({
+      // Dispatch Navroopam Submission Received (Payment Under Verification) Email
+      sendSubmissionReceivedEmail({
         toEmail: sub.email,
         toName: sub.fullName,
         ticketId: sub.ticketId,
@@ -491,7 +498,7 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: `Payment & submission verified for ${sub.fullName} (${domainTitle || 'Entry'}). Acknowledgment email sent successfully!`,
+      message: `Acknowledgment email (submission received & under verification) sent successfully to ${sub.fullName}!`,
       data: sub
     });
   } catch (err: any) {
@@ -499,6 +506,103 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to acknowledge submission',
+      error: err.message
+    });
+  }
+};
+
+export const sendConfirmationEmail = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { instagramPostUrl } = req.body;
+
+    let sub: any = null;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      sub = await SubmissionModel.findById(id);
+    }
+    if (!sub && id) {
+      sub = await SubmissionModel.findOne({ ticketId: id.toUpperCase() });
+    }
+    if (!sub) {
+      sub = sampleSubmissions.find(s => s.id === id || s.ticketId?.toUpperCase() === id.toUpperCase());
+    }
+
+    if (!sub) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission record not found.'
+      });
+    }
+
+    // Must be acknowledged first
+    if (!sub.acknowledged) {
+      return res.status(400).json({
+        success: false,
+        message: 'Acknowledgment email must be sent first before sending confirmation email.'
+      });
+    }
+
+    const cleanInstagramUrl = (instagramPostUrl && typeof instagramPostUrl === 'string') 
+      ? instagramPostUrl.trim() 
+      : (sub.instagramPostUrl || '');
+
+    const nowIso = new Date().toISOString();
+    const newPaymentStatus = (sub.paymentStatus === 'PAID') ? 'PAID' : 'VERIFIED';
+    const paymentVerifiedAt = sub.paymentVerifiedAt || nowIso;
+
+    // Update in-memory / document object
+    sub.instagramPostUrl = cleanInstagramUrl;
+    sub.paymentStatus = newPaymentStatus;
+    sub.paymentVerifiedAt = paymentVerifiedAt;
+    sub.confirmationEmailSent = true;
+    sub.confirmationEmailSentAt = nowIso;
+
+    // Persist to MongoDB
+    try {
+      if (typeof sub.save === 'function') {
+        await sub.save();
+      } else {
+        await SubmissionModel.findByIdAndUpdate(
+          sub._id || sub.id,
+          {
+            $set: {
+              instagramPostUrl: cleanInstagramUrl,
+              paymentStatus: newPaymentStatus,
+              paymentVerifiedAt: paymentVerifiedAt,
+              confirmationEmailSent: true,
+              confirmationEmailSentAt: nowIso
+            }
+          },
+          { new: true }
+        );
+      }
+    } catch (saveErr) {
+      console.error('Error saving submission with instagramPostUrl:', saveErr);
+    }
+
+    // Dispatch Confirmation Email with Instagram link
+    sendNavroopamConfirmationEmail({
+      toEmail: sub.email,
+      toName: sub.fullName,
+      ticketId: sub.ticketId,
+      eventTitle: sub.eventTitle || 'NAVROOPAM v7.0',
+      eventDate: 'October 10 – 24, 2026',
+      location: 'Online Submission Event (HITian Inside Portal)',
+      phone: sub.phone || '',
+      answers: sub.answers,
+      instagramPostUrl: sub.instagramPostUrl || undefined
+    }).catch(err => console.error('Background Confirmation Email Dispatch Error:', err));
+
+    return res.status(200).json({
+      success: true,
+      message: `Payment verified & confirmation email with Instagram link sent successfully to ${sub.fullName}!`,
+      data: sub
+    });
+  } catch (err: any) {
+    console.error('Send Confirmation Email Error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send confirmation email',
       error: err.message
     });
   }

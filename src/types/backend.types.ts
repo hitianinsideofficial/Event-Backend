@@ -68,6 +68,9 @@ export interface SubmissionItem {
   checkedInAt?: string | null;
   acknowledged?: boolean;
   acknowledgedAt?: string | null;
+  confirmationEmailSent?: boolean;
+  confirmationEmailSentAt?: string | null;
+  instagramPostUrl?: string | null;
   appreciationSent?: boolean;
   appreciationSentAt?: string | null;
   certificateFileUrl?: string | null;

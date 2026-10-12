@@ -5,6 +5,7 @@ import {
   getEventSubmissions,
   checkInAttendee, 
   acknowledgeSubmission,
+  sendConfirmationEmail,
   deleteSubmission,
   sendAppreciationEmailController,
   toggleCouponCollected,
@@ -22,6 +23,7 @@ router.post('/', upload.any(), submitRegistration);
 router.get('/ticket/:ticketId', getSubmissionByTicket);
 router.post('/checkin', checkInAttendee);
 router.post('/:id/acknowledge', acknowledgeSubmission);
+router.post('/:id/confirmation-email', sendConfirmationEmail);
 router.post('/:id/appreciation-email', upload.single('certificate'), sendAppreciationEmailController);
 router.delete('/:id/certificate', deleteCertificateController);
 router.patch('/:id/coupon-status', toggleCouponCollected);
