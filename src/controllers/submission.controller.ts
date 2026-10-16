@@ -32,6 +32,41 @@ function normalizeRollString(rollStr: string): string {
   return rollStr.trim().toLowerCase();
 }
 
+// Dynamically determine the frontend URL based on the incoming request, environment variables, or production domain
+function getFrontendBaseUrl(req: Request): string {
+  // 1. Check Origin or Referer header from the admin browser session
+  const origin = req.get('origin');
+  if (origin && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+    return origin.replace(/\/+$/, '');
+  }
+
+  const referer = req.get('referer');
+  if (referer) {
+    try {
+      const parsed = new URL(referer);
+      if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+        return `${parsed.protocol}//${parsed.host}`;
+      }
+    } catch (_) {}
+  }
+
+  // 2. Check environment variables
+  if (process.env.FRONTEND_URL && !process.env.FRONTEND_URL.includes('localhost')) {
+    return process.env.FRONTEND_URL.replace(/\/+$/, '');
+  }
+  if (process.env.CLIENT_URL && !process.env.CLIENT_URL.includes('localhost')) {
+    return process.env.CLIENT_URL.replace(/\/+$/, '');
+  }
+
+  // 3. If NODE_ENV is production, default to production domain
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://events.hitianinside.in';
+  }
+
+  // 4. Fallback to origin header if available or configured env
+  return (origin || process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/+$/, '');
+}
+
 export const submitRegistration = async (req: Request, res: Response) => {
   try {
     const { eventId, fullName, email, phone, answers } = req.body;
@@ -1141,8 +1176,8 @@ export const requestDriveLinkUpdateEmail = async (req: Request, res: Response) =
       });
     }
 
-    // Determine frontend domain
-    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Determine frontend domain dynamically from request, env, or production domain
+    const frontendBase = getFrontendBaseUrl(req);
     // Construct the special route with UTM source and token
     const updateUrl = `${frontendBase}/submissions/update-drive-link?submissionId=${sub.id || sub._id}&ticketId=${encodeURIComponent(sub.ticketId)}&token=${token}&utm_source=email_drive_update&utm_medium=email&utm_campaign=gdrive_permission_fix`;
 
@@ -1448,8 +1483,8 @@ export const requestResubmissionEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Determine frontend domain
-    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Determine frontend domain dynamically from request, env, or production domain
+    const frontendBase = getFrontendBaseUrl(req);
     // Construct the special route with UTM source and token
     const updateUrl = `${frontendBase}/submissions/reupload?submissionId=${sub.id || sub._id}&ticketId=${encodeURIComponent(sub.ticketId)}&token=${token}&utm_source=email_resubmission&utm_medium=email&utm_campaign=reupload_fix`;
 
