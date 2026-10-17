@@ -57,3 +57,24 @@ export const adminLogin = (req: Request, res: Response) => {
     });
   }
 };
+
+// GET /api/admin/mail-stats - Returns remaining daily Brevo email credits out of 300
+export const getBrevoEmailStats = async (req: Request, res: Response) => {
+  try {
+    const { getBrevoAccountQuota } = await import('../services/brevo.service.js');
+    const quota = await getBrevoAccountQuota();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Brevo email quota retrieved successfully',
+      data: quota
+    });
+  } catch (error: any) {
+    console.error('Failed to get Brevo email stats:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve email quota statistics',
+      error: error.message
+    });
+  }
+};

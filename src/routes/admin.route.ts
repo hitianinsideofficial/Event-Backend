@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminLogin } from '../controllers/admin.controller.js';
+import { adminLogin, getBrevoEmailStats } from '../controllers/admin.controller.js';
 import { 
   getObservers, 
   createObserver, 
@@ -12,6 +12,9 @@ import { verifyAdminToken } from '../middlewares/auth.middleware.js';
 const router = Router();
 
 router.post('/login', adminLogin);
+
+// Brevo Daily Mail Quota & Stats (300 mails/day resets midnight)
+router.get('/mail-stats', getBrevoEmailStats);
 
 // Admin Observer Credentials Management
 router.get('/observers', verifyAdminToken, getObservers);
