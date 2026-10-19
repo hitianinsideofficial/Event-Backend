@@ -2,8 +2,8 @@ import ImageKit from 'imagekit';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const publicKey = process.env.IMAGEKIT_PUBLIC_KEY || '';
-const privateKey = process.env.IMAGEKIT_PRIVATE_KEY || '';
+const publicKey = process.env.IMAGEKIT_PUBLIC_KEY || 'placeholder_public_key';
+const privateKey = process.env.IMAGEKIT_PRIVATE_KEY || 'placeholder_private_key';
 const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT || 'https://ik.imagekit.io/hitianinside';
 
 export const imagekit = new ImageKit({
