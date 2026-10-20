@@ -35,6 +35,10 @@ const EventSchema = new Schema<EventDocument>({
   hasAttendance: { type: Boolean, default: false },
   requireFileUpload: { type: Boolean, default: true },
   isHidden: { type: Boolean, default: false },
+  upiId: { type: String, default: '' },
+  payeeName: { type: String, default: '' },
+  registrationFee: { type: Schema.Types.Mixed, default: '' },
+  upiQrUrl: { type: String, default: '' },
   highlights: [EventHighlightSchema],
   customFields: [CustomFieldSchema],
   createdAt: { type: String, default: () => new Date().toISOString() }

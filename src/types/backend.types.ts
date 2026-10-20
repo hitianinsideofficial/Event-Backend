@@ -37,6 +37,10 @@ export interface EventItem {
   hasAttendance: boolean;
   requireFileUpload: boolean;
   isHidden?: boolean;
+  upiId?: string;
+  payeeName?: string;
+  registrationFee?: string | number;
+  upiQrUrl?: string;
   highlights?: EventHighlight[];
   customFields?: CustomField[];
   createdAt: string;
