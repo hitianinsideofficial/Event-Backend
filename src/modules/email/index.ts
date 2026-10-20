@@ -2,9 +2,7 @@ export { dispatchEmail } from './email-dispatcher.service.js';
 export { getBrevoAccountQuota } from './email-quota.service.js';
 export {
   sendRegistrationConfirmationEmail,
-  sendPratidhwaniConfirmationEmail,
-  type SendEmailParams,
-  type SendPratidhwaniEmailParams
+  type SendEmailParams
 } from './templates/registration-confirmation.template.js';
 export {
   sendSubmissionReceivedEmail,

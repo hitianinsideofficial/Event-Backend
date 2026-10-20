@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { SubmissionModel, sampleSubmissions } from '../../models/submission.model.js';
 import {
   sendNavroopamConfirmationEmail,
-  sendPratidhwaniConfirmationEmail,
   sendSubmissionAcknowledgmentEmail,
   sendSubmissionReceivedEmail
 } from '../email/index.js';
@@ -181,12 +180,6 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
       sub.eventTitle?.toLowerCase()?.includes('navaroopam')
     );
 
-    const isPratidhwani = Boolean(
-      sub.eventId === 'pratidhawni' ||
-      sub.eventId === 'pratidhwani' ||
-      sub.eventTitle?.toLowerCase()?.includes('pratid')
-    );
-
     if (isNavroopam) {
       // Dispatch Navroopam Submission Received (Payment Under Verification) Email
       sendSubmissionReceivedEmail({
@@ -199,17 +192,6 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
         phone: sub.phone || '',
         answers: sub.answers
       }).catch(err => console.error('Background Navroopam Acknowledgment Email Dispatch Error:', err));
-    } else if (isPratidhwani) {
-      sendPratidhwaniConfirmationEmail({
-        toEmail: sub.email,
-        toName: sub.fullName,
-        ticketId: sub.ticketId,
-        eventTitle: 'PRATIDHWANI',
-        eventDate: 'August 15, 2026',
-        location: 'Main Campus Grounds & SAC',
-        phone: sub.phone || '',
-        answers: sub.answers
-      }).catch(err => console.error('Background Pratidhwani Confirmation Email Dispatch Error:', err));
     } else {
       // Dispatch Flagship Online Submission Acknowledgment Email (No QR, Online Event)
       sendSubmissionAcknowledgmentEmail({
