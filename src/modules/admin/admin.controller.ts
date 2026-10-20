@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { recordLoginLog } from '../../controllers/log.controller.js';
+import { recordLoginLog } from '../analytics/index.js';
 
 const getAdminEmail = () => process.env.ADMIN_EMAIL || 'admin@hitianinside.org';
 const getAdminPassword = () => process.env.ADMIN_PASSWORD || 'admin123';

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { ObserverModel, sampleObservers } from '../../models/observer.model.js';
-import { recordLoginLog } from '../../controllers/log.controller.js';
+import { recordLoginLog } from '../analytics/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hitian_secret_key_2026';
 

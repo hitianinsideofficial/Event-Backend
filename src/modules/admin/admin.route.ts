@@ -5,8 +5,8 @@ import {
   createObserver, 
   toggleObserverStatus, 
   deleteObserver 
-} from '../../controllers/observer.controller.js';
-import { getLogsAndAnalytics } from '../../controllers/log.controller.js';
+} from '../observer/index.js';
+import { getLogsAndAnalytics } from '../analytics/index.js';
 import { verifyAdminToken } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
