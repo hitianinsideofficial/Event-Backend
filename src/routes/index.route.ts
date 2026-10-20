@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import eventRoutes from './event.route.js';
+import { adminRoutes } from '../modules/admin/index.js';
+import { eventRoutes } from '../modules/event/index.js';
+import { getEventSubmissions } from '../modules/submission/index.js';
 import submissionRoutes from './submission.route.js';
-import certificateRoutes from './certificate.route.js';
-import adminRoutes from './admin.route.js';
-import uploadRoutes from './upload.route.js';
-import analyticsRoutes from './analytics.routes.js';
-import observerRoutes from './observer.routes.js';
-import { getEventSubmissions } from '../controllers/submission.controller.js';
+import { certificateRoutes } from '../modules/certificate/index.js';
+import { uploadRoutes } from '../modules/upload/index.js';
+import { analyticsRoutes } from '../modules/analytics/index.js';
+import { observerRoutes } from '../modules/observer/index.js';
 
 const router = Router();
 
