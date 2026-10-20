@@ -32,10 +32,7 @@ export async function syncSwarajEventsInDB(): Promise<void> {
 
     // 2. Ensure Pratidhawni Preset exists in MongoDB
     const existingPratidhawni = await EventModel.findOne({
-      $or: [
-        { title: { $regex: /pratidhawni/i } },
-        { _id: 'pratidhawni' }
-      ]
+      title: { $regex: /pratidhawni|pratidhwani/i }
     });
 
     if (!existingPratidhawni) {
