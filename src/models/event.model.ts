@@ -38,6 +38,7 @@ const EventSchema = new Schema<EventDocument>({
   upiId: { type: String, default: '' },
   payeeName: { type: String, default: '' },
   registrationFee: { type: Schema.Types.Mixed, default: '' },
+  paymentNote: { type: String, default: '' },
   upiQrUrl: { type: String, default: '' },
   highlights: [EventHighlightSchema],
   customFields: [CustomFieldSchema],

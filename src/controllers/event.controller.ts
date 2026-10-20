@@ -113,6 +113,7 @@ export const createEvent = async (req: Request, res: Response) => {
       upiId,
       payeeName,
       registrationFee,
+      paymentNote,
       upiQrUrl
     } = req.body;
 
@@ -141,6 +142,7 @@ export const createEvent = async (req: Request, res: Response) => {
         upiId: upiId || '',
         payeeName: payeeName || '',
         registrationFee: registrationFee || '',
+        paymentNote: paymentNote || '',
         upiQrUrl: upiQrUrl || ''
       });
 
