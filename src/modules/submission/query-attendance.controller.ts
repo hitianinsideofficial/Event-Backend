@@ -15,13 +15,38 @@ export const getEventSubmissions = async (req: Request, res: Response) => {
       filter.eventId = eventId;
     }
 
-    const subs = await SubmissionModel.find(filter).sort({ createdAt: -1 });
+    const subs = await SubmissionModel.find(filter).sort({ createdAt: -1 }).lean();
 
     if (subs && subs.length > 0) {
+      // Clean up any historical base64 fallback strings that bloat payload to 25MB+
+      const sanitizedSubs = subs.map((sub: any) => {
+        if (sub._id) {
+          sub.id = sub._id.toString();
+          delete sub._id;
+        }
+        delete sub.__v;
+        if (Array.isArray(sub.files)) {
+          sub.files = sub.files.map((f: any) => {
+            const cleanF = { ...f };
+            if (cleanF.localUrl && cleanF.localUrl.startsWith('data:')) {
+              cleanF.localUrl = '';
+            }
+            if (cleanF.driveLink && cleanF.driveLink.startsWith('data:')) {
+              cleanF.driveLink = '';
+            }
+            if (cleanF.downloadLink && cleanF.downloadLink.startsWith('data:')) {
+              cleanF.downloadLink = '';
+            }
+            return cleanF;
+          });
+        }
+        return sub;
+      });
+
       return res.status(200).json({
         success: true,
-        count: subs.length,
-        data: subs
+        count: sanitizedSubs.length,
+        data: sanitizedSubs
       });
     }
 

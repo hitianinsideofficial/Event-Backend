@@ -129,7 +129,7 @@ export const submitRegistration = async (req: Request, res: Response) => {
       });
     }
 
-    // Determine event folder name for Cloudinary (e.g., 'navroopam', 'pratidhwani', 'swaraj_e_hind', or clean title)
+    // Determine event folder name for Cloudinary (e.g., 'navroopam', 'swaraj_e_hind', or clean title)
     const cleanEventFolder = (eventTitle || 'hitian_events')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_')
