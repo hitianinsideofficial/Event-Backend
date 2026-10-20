@@ -109,7 +109,11 @@ export const createEvent = async (req: Request, res: Response) => {
       hasAttendance, 
       requireFileUpload, 
       highlights,
-      customFields 
+      customFields,
+      upiId,
+      payeeName,
+      registrationFee,
+      upiQrUrl
     } = req.body;
 
     if (!title || !description || !date) {
@@ -133,7 +137,11 @@ export const createEvent = async (req: Request, res: Response) => {
         hasAttendance: hasAttendance !== undefined ? Boolean(hasAttendance) : false,
         requireFileUpload: requireFileUpload !== undefined ? Boolean(requireFileUpload) : false,
         highlights: highlights || [],
-        customFields: customFields || []
+        customFields: customFields || [],
+        upiId: upiId || '',
+        payeeName: payeeName || '',
+        registrationFee: registrationFee || '',
+        upiQrUrl: upiQrUrl || ''
       });
 
       return res.status(201).json({
