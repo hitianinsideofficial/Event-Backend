@@ -249,7 +249,9 @@ export const submitRegistration = async (req: Request, res: Response) => {
         files,
         qrCodeUrl,
         attendanceStatus: 'PENDING',
-        checkedInAt: null
+        checkedInAt: null,
+        paymentStatus: 'PENDING',
+        paymentVerifiedAt: null
       });
 
       return res.status(201).json({
@@ -271,6 +273,8 @@ export const submitRegistration = async (req: Request, res: Response) => {
         qrCodeUrl,
         attendanceStatus: 'PENDING',
         checkedInAt: null,
+        paymentStatus: 'PENDING',
+        paymentVerifiedAt: null,
         createdAt: new Date().toISOString()
       };
       sampleSubmissions.unshift(newSubmission);
