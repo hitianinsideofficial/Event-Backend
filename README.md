@@ -1,15 +1,15 @@
 # 🚀 HITian Inside — Event Registration & Certificate Verification Backend API
 
-Production-ready RESTful API service powering the official **HITian Inside** event portal, flagship event registrations (*Swaraj-E-Hind*, *Pratidhwani*), observer submission review portal, Brevo transactional email delivery, and digital certificate verification.
+Production-ready RESTful API service powering the official **HITian Inside** event portal, flagship event registrations (*Navroopam*, *Swaraj-E-Hind*), observer submission review portal, Brevo transactional email delivery, and digital certificate verification.
 
 ---
 
 ## 🌟 Architecture & Key Features
 
-- **Express.js & TypeScript**: Modular Controller-Service architecture written in strong static TypeScript.
+- **Express.js & TypeScript**: Modular Monolith Domain-Driven Architecture written in strong static TypeScript.
 - **MongoDB Atlas Integration**: Mongoose document schemas with resilient fallback sample data for offline environments.
 - **Flagship Event Presets**:
-  - **Pratidhwani**: Offline flagship event with multi-select competition category enrollment (*OPEN MIC*, *YOUTH PARLIAMENT*, *LIVE ART*), dynamic payment UTR verification, and automated Brevo confirmation emails with embedded QR entrance passes.
+  - **Navroopam v7.0**: Festive celebration with multi-domain submission handling (Writing, Photography, Artwork, Video Vlogs) and ₹9.00 domain fee payments.
   - **Swaraj-E-Hind**: Independence celebration event with multi-domain submission handling (Photography, Reel Making, Creative Writing, Digital Art).
 - **Website Catalog Visibility Control**:
   - `isHidden: boolean` property on events allows admins to publish or hide events from the main public catalog (`/`) while remaining accessible in the admin console.

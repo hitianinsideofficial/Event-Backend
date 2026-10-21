@@ -1,9 +1,14 @@
 import mongoose from 'mongoose';
-import { EventModel, SWARAJ_E_HIND_PRESET, PRATIDHAWNI_PRESET } from '../models/event.model.js';
+import { EventModel, SWARAJ_E_HIND_PRESET } from '../models/event.model.js';
 
 export async function syncSwarajEventsInDB(): Promise<void> {
   try {
-    // 1. Sync Swaraj-e-Hind Preset
+    // 1. Clean up any accidental Pratidhwani events from MongoDB
+    await EventModel.deleteMany({
+      title: { $regex: /pratidhawni|pratidhwani/i }
+    });
+
+    // 2. Sync Swaraj-e-Hind Preset
     const swarajEvents = await EventModel.find({
       $or: [
         { theme: 'TRICOLOUR' },
@@ -13,8 +18,6 @@ export async function syncSwarajEventsInDB(): Promise<void> {
     });
 
     for (const ev of swarajEvents) {
-      if (ev.title.toLowerCase().includes('pratidhawni')) continue;
-
       const needsUpdate = !ev.highlights || ev.highlights.some((h: any) => 
         h.title?.includes('Grand Stage') || 
         h.title?.includes('Poetry') || 
@@ -29,21 +32,8 @@ export async function syncSwarajEventsInDB(): Promise<void> {
         console.log(`✅ Synced updated Swaraj-e-Hind highlights & description to MongoDB document: ${ev._id}`);
       }
     }
-
-    // 2. Ensure Pratidhawni Preset exists in MongoDB
-    const existingPratidhawni = await EventModel.findOne({
-      $or: [
-        { title: { $regex: /pratidhawni/i } },
-        { _id: 'pratidhawni' }
-      ]
-    });
-
-    if (!existingPratidhawni) {
-      await EventModel.create(PRATIDHAWNI_PRESET);
-      console.log('✅ Seeded Pratidhawni Offline Flagship Event into MongoDB Atlas!');
-    }
   } catch (err: any) {
-    console.error(`⚠️ Failed to sync Swaraj/Pratidhawni events in MongoDB: ${err.message}`);
+    console.error(`⚠️ Failed to sync Swaraj events in MongoDB: ${err.message}`);
   }
 }
 
