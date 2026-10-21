@@ -231,10 +231,31 @@ export const acknowledgeSubmission = async (req: Request, res: Response) => {
       }).catch(err => console.error('Background Acknowledgment Email Dispatch Error:', err));
     }
 
+    let quotaInfo: any = null;
+    try {
+      const { getBrevoAccountQuota } = await import('../email/index.js');
+      quotaInfo = await getBrevoAccountQuota();
+    } catch (e) {
+      // quota check is non-blocking
+    }
+
+    const remaining = quotaInfo?.credits;
+    const isLowCredits = typeof remaining === 'number' && remaining < 10;
+    const quotaWarning = isLowCredits
+      ? `⚠️ WARNING: Only ${remaining} Brevo emails remaining for today out of 300 limit! Quota resets at 00:00 UTC (Midnight).`
+      : undefined;
+
     return res.status(200).json({
       success: true,
       message: `Acknowledgment email (submission & payment received) sent successfully to ${sub.fullName}!`,
-      data: sub
+      data: sub,
+      quota: quotaInfo ? {
+        credits: quotaInfo.credits,
+        totalLimit: quotaInfo.totalLimit,
+        used: quotaInfo.used,
+        warningAlert: isLowCredits,
+        alertMessage: quotaWarning
+      } : undefined
     });
   } catch (err: any) {
     console.error('Acknowledge Submission Error:', err);
@@ -328,10 +349,31 @@ export const sendConfirmationEmail = async (req: Request, res: Response) => {
       instagramPostUrl: sub.instagramPostUrl || undefined
     }).catch(err => console.error('Background Confirmation Email Dispatch Error:', err));
 
+    let quotaInfo: any = null;
+    try {
+      const { getBrevoAccountQuota } = await import('../email/index.js');
+      quotaInfo = await getBrevoAccountQuota();
+    } catch (e) {
+      // quota check is non-blocking
+    }
+
+    const remaining = quotaInfo?.credits;
+    const isLowCredits = typeof remaining === 'number' && remaining < 10;
+    const quotaWarning = isLowCredits
+      ? `⚠️ WARNING: Only ${remaining} Brevo emails remaining for today out of 300 limit! Quota resets at 00:00 UTC (Midnight).`
+      : undefined;
+
     return res.status(200).json({
       success: true,
       message: `Payment verified & confirmation email with Instagram link sent successfully to ${sub.fullName}!`,
-      data: sub
+      data: sub,
+      quota: quotaInfo ? {
+        credits: quotaInfo.credits,
+        totalLimit: quotaInfo.totalLimit,
+        used: quotaInfo.used,
+        warningAlert: isLowCredits,
+        alertMessage: quotaWarning
+      } : undefined
     });
   } catch (err: any) {
     console.error('Send Confirmation Email Error:', err);

@@ -76,3 +76,45 @@ export async function getBrevoAccountQuota(): Promise<{
     email: accountEmail
   };
 }
+
+/**
+ * Decrement locally cached credits when an email is successfully dispatched
+ * and return the latest quota status with alert flag if remaining < 10
+ */
+export function recordEmailDispatched(): {
+  remainingCredits: number;
+  totalLimit: number;
+  warningAlert: boolean;
+  alertMessage?: string;
+} {
+  const defaultLimit = 300;
+  if (!cachedQuota) {
+    cachedQuota = {
+      credits: 285,
+      totalLimit: defaultLimit,
+      used: 15,
+      dateKey: new Date().toISOString().slice(0, 10),
+      lastUpdated: new Date().toISOString(),
+      resetsAt: new Date(Date.now() + 86400000).toISOString()
+    };
+  }
+
+  // Decrement remaining credits
+  if (cachedQuota.credits > 0) {
+    cachedQuota.credits -= 1;
+    cachedQuota.used += 1;
+  }
+  cachedQuota.lastUpdated = new Date().toISOString();
+
+  const remaining = cachedQuota.credits;
+  const isLow = remaining < 10;
+
+  return {
+    remainingCredits: remaining,
+    totalLimit: cachedQuota.totalLimit,
+    warningAlert: isLow,
+    alertMessage: isLow
+      ? `⚠️ CRITICAL BREVO QUOTA WARNING: Only ${remaining} daily email${remaining === 1 ? '' : 's'} remaining before hitting the 300 daily limit! Quota resets at 00:00 UTC (Midnight).`
+      : undefined
+  };
+}

@@ -65,6 +65,10 @@ export async function dispatchEmail({
 
       if (res.ok) {
         console.log(`✉️ Email successfully dispatched via Brevo REST API to ${toEmail}`);
+        const quotaInfo = (await import('./email-quota.service.js')).recordEmailDispatched();
+        if (quotaInfo.warningAlert) {
+          console.warn(`🚨 ${quotaInfo.alertMessage}`);
+        }
         return true;
       } else {
         const errText = await res.text();
@@ -99,6 +103,10 @@ export async function dispatchEmail({
 
     const info = await transporter.sendMail(mailOptions);
     console.log(`✉️ Email successfully dispatched via Brevo SMTP Relay to ${toEmail} (MessageId: ${info.messageId})`);
+    const quotaInfo = (await import('./email-quota.service.js')).recordEmailDispatched();
+    if (quotaInfo.warningAlert) {
+      console.warn(`🚨 ${quotaInfo.alertMessage}`);
+    }
     return true;
   } catch (smtpErr: any) {
     console.error('❌ Brevo SMTP Relay delivery also failed:', smtpErr.message);
