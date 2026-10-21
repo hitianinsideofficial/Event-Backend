@@ -125,6 +125,10 @@ export const updatePostingExcelDetails = async (req: Request, res: Response) => 
 
     if (instagramPostUrl !== undefined) {
       sub.instagramPostUrl = typeof instagramPostUrl === 'string' ? instagramPostUrl.trim() : null;
+      // If Instagram link is provided and status was not changed or was default QUALIFIED, automatically mark POSTED
+      if (sub.instagramPostUrl && (!postingStatus || postingStatus === 'QUALIFIED')) {
+        sub.postingStatus = 'POSTED';
+      }
     }
 
     if (isDriveNotPublic !== undefined) {
