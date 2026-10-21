@@ -137,6 +137,10 @@ export const updatePostingExcelDetails = async (req: Request, res: Response) => 
 
     if (req.body.moveToPostingExcel !== undefined) {
       sub.moveToPostingExcel = Boolean(req.body.moveToPostingExcel);
+      // When someone is added to posting excel, by default make them QUALIFIED ('Yellow') if they do not already have a status
+      if (sub.moveToPostingExcel && !sub.postingStatus) {
+        sub.postingStatus = 'QUALIFIED';
+      }
     }
 
     if (typeof sub.save === 'function') {
