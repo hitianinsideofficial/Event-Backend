@@ -6,9 +6,9 @@ import { deleteFromImageKit, uploadImageToImageKit } from '../../services/imagek
 export const updatePaymentStatus = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { paymentStatus } = req.body;
+    const { paymentStatus, payeeName } = req.body;
 
-    if (!['PENDING', 'VERIFIED', 'REJECTED', 'PAID'].includes(paymentStatus)) {
+    if (paymentStatus !== undefined && !['PENDING', 'VERIFIED', 'REJECTED', 'PAID'].includes(paymentStatus)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid paymentStatus. Allowed: PENDING, VERIFIED, REJECTED, PAID'
@@ -33,7 +33,19 @@ export const updatePaymentStatus = async (req: Request, res: Response) => {
       });
     }
 
-    sub.paymentStatus = paymentStatus;
+    if (payeeName !== undefined && typeof payeeName === 'string') {
+      const cleanPayee = payeeName.trim();
+      sub.answers = sub.answers || {};
+      sub.answers['Selected Payee'] = cleanPayee;
+      sub.answers['Payee'] = cleanPayee;
+      if (typeof sub.markModified === 'function') {
+        sub.markModified('answers');
+      }
+    }
+
+    if (paymentStatus) {
+      sub.paymentStatus = paymentStatus;
+    }
     if (paymentStatus === 'VERIFIED' || paymentStatus === 'PAID') {
       sub.paymentVerifiedAt = new Date().toISOString();
 
@@ -125,6 +137,10 @@ export const updatePostingExcelDetails = async (req: Request, res: Response) => 
 
     if (instagramPostUrl !== undefined) {
       sub.instagramPostUrl = typeof instagramPostUrl === 'string' ? instagramPostUrl.trim() : null;
+      // If Instagram link is provided and status was not changed or was default QUALIFIED, automatically mark POSTED
+      if (sub.instagramPostUrl && (!postingStatus || postingStatus === 'QUALIFIED')) {
+        sub.postingStatus = 'POSTED';
+      }
     }
 
     if (isDriveNotPublic !== undefined) {
