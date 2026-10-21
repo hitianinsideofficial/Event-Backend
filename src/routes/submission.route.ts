@@ -12,6 +12,7 @@ import {
   deleteCertificateController,
   updatePaymentStatus,
   updatePostingExcelDetails,
+  updateSubmissionMedia,
   requestDriveLinkUpdateEmail,
   getDriveLinkUpdateStatus,
   updateDriveLinkController,
@@ -44,6 +45,7 @@ router.delete('/:id/certificate', deleteCertificateController);
 router.patch('/:id/coupon-status', toggleCouponCollected);
 router.patch('/:id/payment-status', verifyAdminToken, updatePaymentStatus);
 router.patch('/:id/posting-excel', verifyAdminToken, updatePostingExcelDetails);
+router.put('/:id/media', verifyAdminToken, upload.single('mediaFile'), updateSubmissionMedia);
 router.post('/:id/request-drive-update', verifyAdminToken, requestDriveLinkUpdateEmail);
 router.post('/:id/request-resubmission', verifyAdminToken, requestResubmissionEmail);
 router.delete('/:id', verifyAdminToken, deleteSubmission);
