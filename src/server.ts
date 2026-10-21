@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 
 // Initialize MongoDB Atlas connection before starting server listener
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`🚀 Express Server connected to MongoDB Atlas on port ${PORT}`);
 
     // Self-ping to keep Render awake during active hours (every 10 minutes)
@@ -24,4 +24,9 @@ connectDB().then(() => {
       }, 10 * 60 * 1000); // 10 minutes
     }
   });
+
+  // Ensure high timeouts for slow mobile networks uploading media files
+  server.keepAliveTimeout = 120000; // 120s
+  server.headersTimeout = 125000;   // 125s
+  server.requestTimeout = 300000;   // 5 minutes
 });
