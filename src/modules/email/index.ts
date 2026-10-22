@@ -1,5 +1,5 @@
 export { dispatchEmail } from './email-dispatcher.service.js';
-export { getBrevoAccountQuota } from './email-quota.service.js';
+export { getBrevoAccountQuota, recordEmailDispatched } from './email-quota.service.js';
 export {
   sendRegistrationConfirmationEmail,
   type SendEmailParams
