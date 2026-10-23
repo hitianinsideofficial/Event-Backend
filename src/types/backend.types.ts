@@ -37,6 +37,7 @@ export interface EventItem {
   hasAttendance: boolean;
   requireFileUpload: boolean;
   isHidden?: boolean;
+  showGallery?: boolean;
   upiId?: string;
   payeeName?: string;
   registrationFee?: string | number;
