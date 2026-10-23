@@ -329,7 +329,7 @@ export const sendConfirmationEmail = async (req: Request, res: Response) => {
               confirmationEmailSentAt: nowIso
             }
           },
-          { new: true }
+          { returnDocument: 'after' }
         );
       }
     } catch (saveErr) {

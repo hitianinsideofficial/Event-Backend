@@ -193,7 +193,7 @@ export const updateEventDetails = async (req: Request, res: Response) => {
 
     let updated = null;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      updated = await EventModel.findByIdAndUpdate(id, updateData, { new: true });
+      updated = await EventModel.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
     }
 
     if (!updated) {
@@ -229,7 +229,7 @@ export const updateEventStatus = async (req: Request, res: Response) => {
 
     let event = null;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      event = await EventModel.findByIdAndUpdate(id, { status }, { new: true });
+      event = await EventModel.findByIdAndUpdate(id, { status }, { returnDocument: 'after' });
     }
 
     if (!event) {
@@ -258,7 +258,7 @@ export const updateEventForm = async (req: Request, res: Response) => {
 
     let event = null;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      event = await EventModel.findByIdAndUpdate(id, { customFields }, { new: true });
+      event = await EventModel.findByIdAndUpdate(id, { customFields }, { returnDocument: 'after' });
     }
 
     if (!event) {
@@ -315,7 +315,7 @@ export const toggleEventVisibility = async (req: Request, res: Response) => {
 
     let updated = null;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      updated = await EventModel.findByIdAndUpdate(id, { isHidden: Boolean(isHidden) }, { new: true });
+      updated = await EventModel.findByIdAndUpdate(id, { isHidden: Boolean(isHidden) }, { returnDocument: 'after' });
     }
 
     if (!updated) {

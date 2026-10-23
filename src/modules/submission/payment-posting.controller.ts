@@ -178,7 +178,7 @@ export const updatePostingExcelDetails = async (req: Request, res: Response) => 
     const updatedSub = await SubmissionModel.findByIdAndUpdate(
       sub._id || sub.id,
       { $set: updateFields },
-      { new: true, runValidators: false }
+      { returnDocument: 'after', runValidators: false }
     );
 
     return res.status(200).json({
@@ -348,7 +348,7 @@ export const updateSubmissionMedia = async (req: Request, res: Response) => {
             isDriveNotPublic: sub.isDriveNotPublic
           }
         },
-        { new: true }
+        { returnDocument: 'after' }
       );
     }
 
