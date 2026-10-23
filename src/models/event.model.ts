@@ -35,6 +35,7 @@ const EventSchema = new Schema<EventDocument>({
   hasAttendance: { type: Boolean, default: false },
   requireFileUpload: { type: Boolean, default: true },
   isHidden: { type: Boolean, default: false },
+  showGallery: { type: Boolean, default: true },
   upiId: { type: String, default: '' },
   payeeName: { type: String, default: '' },
   registrationFee: { type: Schema.Types.Mixed, default: '' },

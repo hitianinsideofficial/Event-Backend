@@ -8,9 +8,9 @@ const UploadedFileSchema = new Schema<UploadedFile>({
   fileId: { type: String },
   driveLink: { type: String },
   downloadLink: { type: String },
-  localUrl: { type: String, required: true },
-  originalName: { type: String, required: true },
-  mimeType: { type: String, required: true },
+  localUrl: { type: String, default: '' },
+  originalName: { type: String, default: 'file' },
+  mimeType: { type: String, default: 'application/octet-stream' },
   size: { type: Number }
 }, { _id: false });
 
@@ -52,6 +52,7 @@ const SubmissionSchema = new Schema<SubmissionDocument>({
   couponCollected: { type: Boolean, default: false },
   paymentStatus: { type: String, enum: ['PENDING', 'VERIFIED', 'REJECTED', 'PAID'], default: 'PENDING' },
   paymentVerifiedAt: { type: String, default: null },
+  winnerPosition: { type: String, enum: ['1st', '2nd', '3rd', null], default: null },
   createdAt: { type: String, default: () => new Date().toISOString() }
 });
 

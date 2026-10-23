@@ -124,6 +124,8 @@ export const updatePostingExcelDetails = async (req: Request, res: Response) => 
       });
     }
 
+    const updateFields: any = {};
+
     if (postingStatus !== undefined) {
       const validStatuses = ['QUALIFIED', 'POSTED', 'DISQUALIFIED', 'MAIL_SENT', null, ''];
       if (!validStatuses.includes(postingStatus)) {
@@ -133,54 +135,56 @@ export const updatePostingExcelDetails = async (req: Request, res: Response) => 
         });
       }
       sub.postingStatus = postingStatus ? postingStatus : null;
+      updateFields.postingStatus = sub.postingStatus;
     }
 
     if (instagramPostUrl !== undefined) {
       sub.instagramPostUrl = typeof instagramPostUrl === 'string' ? instagramPostUrl.trim() : null;
-      // If Instagram link is provided and status was not changed or was default QUALIFIED, automatically mark POSTED
       if (sub.instagramPostUrl && (!postingStatus || postingStatus === 'QUALIFIED')) {
         sub.postingStatus = 'POSTED';
+        updateFields.postingStatus = 'POSTED';
       }
+      updateFields.instagramPostUrl = sub.instagramPostUrl;
     }
 
     if (isDriveNotPublic !== undefined) {
       sub.isDriveNotPublic = Boolean(isDriveNotPublic);
+      updateFields.isDriveNotPublic = sub.isDriveNotPublic;
     }
 
     if (isDriveNotPublicReason !== undefined) {
       sub.isDriveNotPublicReason = isDriveNotPublicReason ? String(isDriveNotPublicReason).trim() : null;
+      updateFields.isDriveNotPublicReason = sub.isDriveNotPublicReason;
+    }
+
+    if (req.body.winnerPosition !== undefined) {
+      const wp = req.body.winnerPosition;
+      if (['1st', '2nd', '3rd', null, ''].includes(wp)) {
+        sub.winnerPosition = wp ? wp : null;
+        updateFields.winnerPosition = sub.winnerPosition;
+      }
     }
 
     if (req.body.moveToPostingExcel !== undefined) {
       sub.moveToPostingExcel = Boolean(req.body.moveToPostingExcel);
-      // When someone is added to posting excel, by default make them QUALIFIED ('Yellow') if they do not already have a status
       if (sub.moveToPostingExcel && !sub.postingStatus) {
         sub.postingStatus = 'QUALIFIED';
+        updateFields.postingStatus = 'QUALIFIED';
       }
+      updateFields.moveToPostingExcel = sub.moveToPostingExcel;
     }
 
-    if (typeof sub.save === 'function') {
-      await sub.save();
-    } else {
-      await SubmissionModel.findByIdAndUpdate(
-        sub._id || sub.id,
-        {
-          $set: {
-            postingStatus: sub.postingStatus,
-            instagramPostUrl: sub.instagramPostUrl,
-            isDriveNotPublic: sub.isDriveNotPublic,
-            isDriveNotPublicReason: sub.isDriveNotPublicReason,
-            moveToPostingExcel: sub.moveToPostingExcel
-          }
-        },
-        { new: true }
-      );
-    }
+    // Use atomic findByIdAndUpdate to avoid failing schema validation on legacy documents with empty file links
+    const updatedSub = await SubmissionModel.findByIdAndUpdate(
+      sub._id || sub.id,
+      { $set: updateFields },
+      { new: true, runValidators: false }
+    );
 
     return res.status(200).json({
       success: true,
       message: `Posting details updated successfully for ${sub.fullName}`,
-      data: sub
+      data: updatedSub || sub
     });
   } catch (err: any) {
     console.error('Update Posting Details Error:', err);
