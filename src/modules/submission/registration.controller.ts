@@ -98,6 +98,44 @@ export const submitRegistration = async (req: Request, res: Response) => {
       }
     }
 
+    // Check duplicate Transaction UID / UTR (Each entry must have a unique payment)
+    const transactionUid = (parsedAnswers['Transaction UID'] || parsedAnswers['UTR'] || parsedAnswers['Transaction ID'] || '').trim();
+    if (transactionUid && transactionUid.length >= 4) {
+      try {
+        const existingUtrSub = await SubmissionModel.findOne({
+          eventId,
+          $or: [
+            { 'answers.Transaction UID': transactionUid },
+            { 'answers.UTR': transactionUid },
+            { 'answers.Transaction ID': transactionUid }
+          ]
+        });
+
+        if (existingUtrSub) {
+          return res.status(400).json({
+            success: false,
+            errorCode: 'DUPLICATE_PAYMENT_UTR',
+            message: `The Transaction Ref / UTR "${transactionUid}" has ALREADY been submitted for ticket ${existingUtrSub.ticketId} (${existingUtrSub.answers?.['Selected Domain'] || 'another domain'}). Each domain entry requires its own separate, unique payment transaction.`
+          });
+        }
+      } catch (utrErr) {
+        const sampleUtrDup = sampleSubmissions.find(s => 
+          s.eventId === eventId && (
+            (s.answers?.['Transaction UID'] || '').trim() === transactionUid ||
+            (s.answers?.['UTR'] || '').trim() === transactionUid ||
+            (s.answers?.['Transaction ID'] || '').trim() === transactionUid
+          )
+        );
+        if (sampleUtrDup) {
+          return res.status(400).json({
+            success: false,
+            errorCode: 'DUPLICATE_PAYMENT_UTR',
+            message: `The Transaction Ref / UTR "${transactionUid}" has ALREADY been submitted. Each domain entry requires its own separate, unique payment transaction.`
+          });
+        }
+      }
+    }
+
     let eventTitle = 'Event Registration';
     let eventDate = 'TBD';
     let location = 'Main Campus';
