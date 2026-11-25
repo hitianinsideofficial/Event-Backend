@@ -133,7 +133,7 @@ export const toggleObserverStatus = async (req: Request, res: Response) => {
     const { isActive } = req.body;
 
     try {
-      const updated = await ObserverModel.findByIdAndUpdate(id, { isActive }, { new: true });
+      const updated = await ObserverModel.findByIdAndUpdate(id, { isActive }, { returnDocument: 'after' });
       if (updated) {
         return res.status(200).json({ success: true, message: `Observer status updated to ${isActive ? 'Active' : 'Disabled'}`, data: updated });
       }

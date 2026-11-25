@@ -48,6 +48,8 @@ const SubmissionSchema = new Schema<SubmissionDocument>({
   resubmissionCompletedAt: { type: String, default: null },
   appreciationSent: { type: Boolean, default: false },
   appreciationSentAt: { type: String, default: null },
+  certificateSent: { type: Boolean, default: false },
+  certificateSentAt: { type: String, default: null },
   certificateFileUrl: { type: String, default: null },
   couponCollected: { type: Boolean, default: false },
   paymentStatus: { type: String, enum: ['PENDING', 'VERIFIED', 'REJECTED', 'PAID'], default: 'PENDING' },
