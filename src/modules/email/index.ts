@@ -18,6 +18,10 @@ export {
   type SendAppreciationEmailParams
 } from './templates/appreciation.template.js';
 export {
+  sendNavroopamCertificateEmail,
+  type SendNavroopamCertificateEmailParams
+} from './templates/navroopam-certificate.template.js';
+export {
   sendDriveLinkUpdateEmail,
   sendResubmissionRequestEmail,
   type SendDriveUpdateEmailParams,

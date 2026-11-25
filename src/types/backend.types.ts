@@ -94,6 +94,8 @@ export interface SubmissionItem {
   resubmissionCompletedAt?: string | null;
   appreciationSent?: boolean;
   appreciationSentAt?: string | null;
+  certificateSent?: boolean;
+  certificateSentAt?: string | null;
   certificateFileUrl?: string | null;
   couponCollected?: boolean;
   paymentStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'PAID';
