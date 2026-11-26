@@ -91,7 +91,7 @@ export async function sendNavroopamCertificateEmail(
               <p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
                 Your high-resolution certificate is attached directly to this email. You can also view or download it anytime from the event portal:
               </p>
-              <a href="https://hitianinside.in/certificate" style="display: inline-block; background: #800020; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 28px; border-radius: 8px; border: 1px solid #e6c594; box-shadow: 0 2px 8px rgba(128, 0, 32, 0.25);">
+              <a href="https://events.hitianinside.in/certificate" style="display: inline-block; background: #800020; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 28px; border-radius: 8px; border: 1px solid #e6c594; box-shadow: 0 2px 8px rgba(128, 0, 32, 0.25);">
                 Download Certificate on Web Portal &rarr;
               </a>
             </div>
